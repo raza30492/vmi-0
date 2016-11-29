@@ -1,15 +1,20 @@
 package com.example.vmi.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "EMPLOYEE")
-public class Employee implements Serializable {
+public class Employee {
 	    @Id
 	    @Column(name = "EMP_ID", nullable = false, unique = true)
 	    private Long id;
@@ -17,22 +22,34 @@ public class Employee implements Serializable {
 	    @Column(name = "NAME", nullable = false)
 	    private String name;
 	    
-	    @Column(name = "EMAIL", nullable = true)
+	    @Column(name = "EMAIL", nullable = true, unique = true)
 	    private String email;
 	    
+	    @JsonIgnore
 	    @Column(name = "PASSWORD", nullable = false)
 	    private String password;
 	    
+	    @Column(name = "ROLE", nullable = false)
+	    private String role;
+	    
 	    @Column(name = "MOBILE", nullable = true)
 	    private String mobile;
+	    
+	    @ManyToOne(optional = true)
+	    @JoinColumn(name = "BUYER_ID")
+	    private Buyer buyer;
+	    
 
 	    public Employee() {
 	    }
 
-	    public Employee(String name, String email, String password) {
+	    public Employee(Long id,String name, String email, String password, Role role, String mobile) {
+	    	this.id = id;
 	        this.name = name;
 	        this.email = email;
-	        this.password = password;
+	        setPassword(password);
+	        this.role = role.getValue();
+	        this.mobile = mobile;
 	    }
 
 		public Long getId() {
@@ -64,7 +81,16 @@ public class Employee implements Serializable {
 		}
 
 		public void setPassword(String password) {
-			this.password = password;
+			PasswordEncoder encoder = new BCryptPasswordEncoder();
+			this.password = encoder.encode(password);
+		}
+
+		public Role getRole() {
+			return Role.parse(role);
+		}
+
+		public void setRole(Role role) {
+			this.role = role.getValue();
 		}
 
 		public String getMobile() {
@@ -74,5 +100,20 @@ public class Employee implements Serializable {
 		public void setMobile(String mobile) {
 			this.mobile = mobile;
 		}
+
+		public Buyer getBuyer() {
+			return buyer;
+		}
+
+		public void setBuyer(Buyer buyer) {
+			this.buyer = buyer;
+		}
+
+		@Override
+		public String toString() {
+			return "Employee [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", role="
+					+ role + ", mobile=" + mobile + ", buyer=" + buyer + "]";
+		}
+		
 	    
 }

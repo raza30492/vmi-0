@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 
-import Header from 'grommet/components/Header';
+//import Header from 'grommet/components/Header';
 //import Title from 'grommet/components/Title';
 
 import AppHeader from './AppHeader';
@@ -13,22 +13,20 @@ class Dashboard extends Component {
 
   }
 
+  componentDidMount () {
+    const {token} = window.sessionStorage;
+    if ((token == null || token == 'null' )) {
+      this.context.router.push('/logon');
+    }
+  }
+
   render () {
 
     return (
 		  <div>
-		    <Header>
 			    <AppHeader />
-			  </Header>
         <div>
-        <h1>Welcome to Dashboard!</h1>
-        <form method="POST" action="http://localhost:8080/api/upload" encType="multipart/form-data">
-          File1 to upload: <input type="file" name="file" /><br/>
-
-          Name1: <input type="text" name="name" /><br/>
-
-          <input type="submit" value="Upload" /> Press here to upload the file!
-        </form>
+          <h1>Welcome to Dashboard!</h1>
         </div>
 
 			</div>
@@ -36,8 +34,12 @@ class Dashboard extends Component {
   }
 }
 
+Dashboard.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
 let select = (store) => {
-  return { nav: store.nav};
+  return { nav: store.nav, user: store.user};
 };
 
 export default connect(select)(Dashboard);

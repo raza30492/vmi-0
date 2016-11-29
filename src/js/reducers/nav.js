@@ -5,9 +5,13 @@ import { NAV_ACTIVATE } from "../actions";
 
 const initialState = {
   active: true,
-  items:[
+  itemsAdmin:[
     { path: '/', label: 'Dashboard'},
     { path: '/buyer', label: 'Buyer'},
+    { path: '/user', label: 'User'}
+  ],
+  items:[
+    { path: '/', label: 'Dashboard'},
     { path: '/fit', label: 'Fit'},
     { path: '/sku', label: 'SKU'}
   ]

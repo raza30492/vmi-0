@@ -21,8 +21,32 @@ class AppHeader extends Component {
     this.props.dispatch(navActivate(true));
   }
 
+  _logout () {
+    sessionStorage.token = null;
+    sessionStorage.username = null;
+    sessionStorage.role = null;
+    sessionStorage.buyerName = null;
+    sessionStorage.buyerHref = null;
+  }
+
   render () {
-    let { active: navActive } = this.props.nav;
+    const { active: navActive } = this.props.nav;
+    const { username, token } = window.sessionStorage;
+    let login = null;
+    if (!(token == null || token == 'null')) {
+      login = (
+        <Menu direction="row" align="center" responsive={false}>
+          <Anchor href="#">{username}</Anchor>
+          <Anchor path="/logon" onClick={this._logout.bind(this)}>Logout</Anchor>
+        </Menu>
+      );
+    } else {
+      login = (
+        <Menu direction="row" align="center" responsive={false}>
+          <Anchor href="#">Login</Anchor>
+        </Menu>
+      );
+    }
     let title = null;
     if ( !navActive ) {
       title = (
@@ -38,19 +62,18 @@ class AppHeader extends Component {
     return (
       <Header size="large" justify="between" colorIndex="neutral-2" pad={{"horizontal": "medium"}}>
         {title}
-        <Menu direction="row" align="center" responsive={false}>
-          <Anchor href="#">
-            Login
-          </Anchor>
-
-        </Menu>
+        {login}
       </Header>
     );
   }
 }
+//
+// AppHeader.contextTypes = {
+//   router : React.PropTypes.object.isRequired
+// }
 
 let select = (store) => {
-  return { nav: store.nav};
+  return { nav: store.nav, user: store.user};
 };
 
 export default connect(select)(AppHeader);

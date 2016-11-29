@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 
@@ -18,6 +20,10 @@ public class Fit {
     
     @Column(name = "NAME", nullable = false, unique = true)
     private String name;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "BUYER_ID")
+    private Buyer buyer;
 
     public Fit() {
     }
@@ -40,6 +46,14 @@ public class Fit {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Buyer getBuyer() {
+		return buyer;
+	}
+
+	public void setBuyer(Buyer buyer) {
+		this.buyer = buyer;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from 'react-redux';
-//import { Link } from 'react-router';
+import { ROLE_ADMIN } from '../utils/util';
 
 import Sidebar from "grommet/components/Sidebar";
 import Header from "grommet/components/Header";
@@ -27,7 +27,9 @@ class NavSidebar extends Component {
   }
 
   render () {
-    const { nav: {items}} = this.props;
+    const { items: itemsDefault, itemsAdmin } = this.props.nav;
+    const { role } = window.sessionStorage;
+    const items = (role == ROLE_ADMIN) ? itemsAdmin : itemsDefault;
     var links = items.map( (page, index) => {
       return (
         <Anchor key={index} path={page.path} method="push">
@@ -52,7 +54,7 @@ class NavSidebar extends Component {
 }
 
 let select = (store) => {
-  return { nav : store.nav };
+  return { nav : store.nav, user: store.user };
 };
 
 export default connect(select)(NavSidebar);
