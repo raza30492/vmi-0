@@ -2,8 +2,7 @@ import React, { Component } from "react";
 import { connect } from 'react-redux';
 
 import { getFits, getBuyers } from '../actions';
-import { handleErrors } from '../utils/restUtil';
-import { headers } from 'grommet/utils/Rest';
+import { handleErrors, headers } from '../utils/restUtil';
 
 //Components
 import AppHeader from './AppHeader';
@@ -36,7 +35,6 @@ class SKU extends Component {
       addingBatch: false,
       editing: false,
       fitName: null,
-      buyerName: 'Select Buyer',
       skuName: '',
       skus : [],
       files: []
@@ -91,11 +89,11 @@ class SKU extends Component {
   }
 
   _addSku () {
-    //console.log('addSku()');
-    const { fitName, buyerName, skuName} = this.state;
+    console.log('addSku()');
+    const { fitName, skuName} = this.state;
     const fit = this.props.fit.fits.find(fit=>fit.name==fitName).href;
-    const buyer = this.props.buyer.buyers.find(buyer=>buyer.name==buyerName).href;
-    const sku = { name: skuName, fit: fit, buyer: buyer};
+    const sku = { name: skuName, fit: fit };
+    console.log(sku);
     const options = {method: 'POST', headers: {...headers}, body: JSON.stringify(sku)};
     fetch(window.serviceHost + '/skus', options)
     .then(handleErrors)
@@ -104,7 +102,7 @@ class SKU extends Component {
         alert('Duplicate Entry!');
       }else{
         response.json().then((data)=>{
-          this.setState({addingSingle:false});
+          this.setState({addingSingle:false, skuName: ''});
           this._getSkus(fitName);
         });
       }
@@ -115,13 +113,13 @@ class SKU extends Component {
   }
 
   _addBatchSku (e) {
-    const { fitName, buyerName} = this.state;
+    const { fitName } = this.state;
     var data = new FormData();
-    data.append('buyer',buyerName);
     data.append('fit', fitName);
     data.append("file", this.state.files[0]);
     const options = {
       method: 'post',
+      headers: { 'Authorization': 'Basic ' + window.sessionStorage.token },
       body: data
     };
 
@@ -231,13 +229,11 @@ class SKU extends Component {
 
   render () {
     const { fits } = this.props.fit;
-    const { buyers } = this.props.buyer;
-    const { fetching, addingSingle, addingBatch, editing, skus, buyerName, skuName, files, fitName: value } = this.state;
+    const { fetching, addingSingle, addingBatch, editing, skus, skuName, files, fitName: value } = this.state;
     const fitItems = fits.map(fit=> fit.name); //Fit Filter all values
     const fitName = (value == null) ? fitItems[0] : value; //Fit Filter selected value
     const count = fetching ? 100 : skus.length;  // For showing emptyMessage [ListPlaceholder]
 
-    const buyerItems = buyers.map(buyer=>buyer.name);
     const loading = fetching ? (<Spinning />) : null;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
 
@@ -259,9 +255,6 @@ class SKU extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Add New SKU</Heading></Header>
           <FormFields>
-            <FormField>
-              <Select options={buyerItems} value={buyerName} onChange={this._onBuyerFilter.bind(this)}/>
-            </FormField>
             <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
@@ -292,9 +285,6 @@ class SKU extends Component {
           <Header><Heading tag="h3" strong={true}>Upload</Heading></Header>
           <FormFields>
             <FormField>
-              <Select options={buyerItems} value={buyerName} onChange={this._onBuyerFilter.bind(this)}/>
-            </FormField>
-            <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
             <FormField label="Excel File containing SKU" >
@@ -315,9 +305,6 @@ class SKU extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Edit SKU</Heading></Header>
           <FormFields>
-            <FormField>
-              <Select options={buyerItems} value={buyerName} onChange={this._onBuyerFilter.bind(this)}/>
-            </FormField>
             <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>

@@ -36,8 +36,15 @@ class Buyer extends Component {
     this.props.dispatch(getBuyers());
   }
 
-  _removeBuyer (href) {
-    this.props.dispatch(removeBuyer(href));
+  _addBuyer () {
+    const { buyerName } = this.state;
+    if (buyerName == null || buyerName == "") {
+      alert("Enetr Buyer Name First!");
+      return;
+    }
+    const buyer = {name: buyerName};
+    this.props.dispatch(addBuyer(buyer));
+    this.setState({buyerName: ''});
   }
 
   _editBuyer () {
@@ -51,13 +58,17 @@ class Buyer extends Component {
     this.setState({href: null, buyerName: ''});
   }
 
-  _onEditClick (name, href) {
-    this.setState({href: href, buyerName: name});
-    this.props.dispatch({type: TOGGLE_BUYER_EDIT_FORM, payload: {editing: true}});
+  _removeBuyer (href) {
+    this.props.dispatch(removeBuyer(href));
   }
 
   _onAddClick () {
     this.props.dispatch({type: TOGGLE_BUYER_ADD_FORM, payload: {adding: true}});
+  }
+
+  _onEditClick (name, href) {
+    this.setState({href: href, buyerName: name});
+    this.props.dispatch({type: TOGGLE_BUYER_EDIT_FORM, payload: {editing: true}});
   }
 
   _onCloseLayer (layer) {
@@ -70,16 +81,6 @@ class Buyer extends Component {
 
   _onChangeInput (e) {
     this.setState({buyerName:e.target.value});
-  }
-
-  _addBuyer () {
-    const { buyerName } = this.state;
-    if (buyerName == null || buyerName == "") {
-      alert("Enetr Buyer Name First!");
-      return;
-    }
-    const buyer = {name: buyerName};
-    this.props.dispatch(addBuyer(buyer));
   }
 
   render () {

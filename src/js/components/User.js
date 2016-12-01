@@ -38,6 +38,7 @@ class User extends Component {
       url: null,
       roles: [ROLE_USER, ROLE_MERCHANT, ROLE_ADMIN],
       role: ROLE_USER,
+      showBuyerFilter: false,
       buyer: 'Select buyer access'
     };
     // this._onDrop = this._onDrop.bind(this);
@@ -151,7 +152,12 @@ class User extends Component {
   }
 
   _onRoleFilter (event) {
-    this.setState({role: event.value});
+    const role = event.value;
+    if ( role == ROLE_MERCHANT ) {
+      this.setState({role: role, showBuyerFilter: true});
+    }else{
+      this.setState({role: role, showBuyerFilter: false});
+    }
   }
 
   _onChangeInput ( event ) {
@@ -178,7 +184,7 @@ class User extends Component {
 
   render () {
     const { buyers } = this.props.buyer;
-    const { fetching, adding, editing, users, user, buyer, roles, role } = this.state;
+    const { fetching, adding, users, user, buyer, roles, role, showBuyerFilter } = this.state;
     const loading = fetching ? (<Spinning />) : null;
     const buyerItems = buyers.map(buyer=>buyer.name);
     const userItems = users.map((user, index)=>{
@@ -193,6 +199,8 @@ class User extends Component {
         </TableRow>
       );
     });
+
+    const buyerAccess = showBuyerFilter ? (<FormField><Select options={buyerItems} value={buyer} onChange={this._onBuyerFilter.bind(this)}/></FormField>) : null;
 
     const layerAdd = (
       <Layer hidden={!adding} onClose={this._onCloseLayer.bind(this, 'add')}  closer={true} align="center">
@@ -214,9 +222,7 @@ class User extends Component {
             <FormField>
               <Select options={roles} value={role} onChange={this._onRoleFilter.bind(this)}/>
             </FormField>
-            <FormField>
-              <Select options={buyerItems} value={buyer} onChange={this._onBuyerFilter.bind(this)}/>
-            </FormField>
+            {buyerAccess}
           </FormFields>
           <Footer pad={{"vertical": "medium"}} >
             <Button label="Add" primary={true}  onClick={this._addUser.bind(this)} />

@@ -27,6 +27,7 @@ class Fit extends Component {
   constructor () {
     super();
     this.state = {
+      buyerHref: window.sessionStorage.buyerHref,
       fitName: '',
       href: null
     };
@@ -34,6 +35,17 @@ class Fit extends Component {
 
   componentDidMount () {
     this.props.dispatch(getFits());
+  }
+
+  _addFit () {
+    const { fitName, buyerHref: buyer } = this.state;
+    if (fitName == null || fitName == "") {
+      alert("Enetr Fit Name First!");
+      return;
+    }
+    const fit = {name: fitName, buyer: buyer};
+    this.props.dispatch(addFit(fit));
+    this.setState({fitName:''});
   }
 
   _removeFit (href) {
@@ -72,17 +84,7 @@ class Fit extends Component {
     this.setState({fitName:e.target.value});
   }
 
-  _addFit () {
-    const { fitName } = this.state;
-    if (fitName == null || fitName == "") {
-      alert("Enetr Fit Name First!");
-      return;
-    }
-    const fit = {name: fitName};
-    this.props.dispatch(addFit(fit));
-    this.setState({fitName:''});
-    //this.props.dispatch(getFits());
-  }
+
 
   render () {
     //this.props.dispatch(getFits());

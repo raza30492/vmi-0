@@ -35,17 +35,13 @@ public class SKU implements Serializable{
     @JoinColumn(name = "FIT_ID", nullable = false)
     private Fit fit;
     
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "BUYER_ID")
-    private Buyer buyer;
 
     public SKU() {
     }
 
-    public SKU(String sku, Fit fit, Buyer buyer) {
+    public SKU(String sku, Fit fit) {
         this.name = sku;
         this.fit = fit;
-        this.buyer = buyer;
     }
 
 	public Long getId() {
@@ -72,17 +68,9 @@ public class SKU implements Serializable{
 		this.fit = fit;
 	}
 
-	public Buyer getBuyer() {
-		return buyer;
-	}
-
-	public void setBuyer(Buyer buyer) {
-		this.buyer = buyer;
-	}
-
 	@Override
 	public String toString() {
-		return "SKU [id=" + id + ", name=" + name + ", fit=" + fit + ", buyer=" + buyer + "]";
+		return "SKU [id=" + id + ", name=" + name + ", fit=" + fit + "]";
 	}
 
 }

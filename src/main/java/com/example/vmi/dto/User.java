@@ -7,6 +7,17 @@ public class User {
 	private String mobile;
 	private String role;
 	private String buyer;
+	
+	public User() {
+	}
+	public User(Long id, String name, String email, String mobile, String role) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.mobile = mobile;
+		this.role = role;
+	}
 	public Long getId() {
 		return id;
 	}

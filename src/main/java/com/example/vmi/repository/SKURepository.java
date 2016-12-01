@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.vmi.entity.SKU;
 
 @RepositoryRestResource(collectionResourceRel = "skus", itemResourceRel = "sku", path = "skus")
-@PreAuthorize("hasRole('ROLE_USER')")
+@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_MERCHANT')")
 public interface SKURepository extends JpaRepository<SKU, Long> {
 	List<SKU> findByFitName(@Param("fitName") String fitName);
 }

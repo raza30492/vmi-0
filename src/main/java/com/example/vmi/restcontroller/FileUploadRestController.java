@@ -58,9 +58,9 @@ public class FileUploadRestController {
     }
 
     @PostMapping("/sku")
-    public ResponseEntity<Void> handleFileUpload(@RequestParam("buyer") String buyer, @RequestParam("fit") String fit, @RequestParam("file") MultipartFile file ) {
+    public ResponseEntity<Void> handleFileUpload(@RequestParam("fit") String fit, @RequestParam("file") MultipartFile file ) {
     	if(!file.isEmpty()){
-    		skuService.addBatch(buyer, fit, file);
+    		skuService.addBatch(fit, file);
     	}
     	return new ResponseEntity<Void>(HttpStatus.OK);
     }
