@@ -5,6 +5,7 @@ import Main from "./components/Main";
 import SKU from './components/SKU';
 import User from './components/User';
 import Logon from './components/Logon';
+import SalesData from './components/SalesData';
 
 export default {
   path: '/',
@@ -15,6 +16,7 @@ export default {
     { path: 'user', component: User},
     { path: 'buyer', component: Buyer},
     { path: 'fit', component: Fit},
+    { path: 'sales', component: SalesData},
     { path: 'sku', component: SKU}
   ]
 };

@@ -3,6 +3,7 @@ package com.example.vmi.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,16 +40,24 @@ public class SkuService {
 			}else if(input.getName().contains("xls")){
 				output = CsvUtil.fromXls(input);
 			}
+			System.out.println(output);
 			//Read as Bean from csv String
 			CSVReader reader = new CSVReader(new StringReader(output));
             HeaderColumnNameMappingStrategy<SKU> strategy = new HeaderColumnNameMappingStrategy<>();
             strategy.setType(SKU.class);
             CsvToBean<SKU> csvToBean = new CsvToBean<>();
             List<SKU> list = csvToBean.parse(strategy, reader);
-            
+            List<SKU> removeList = new ArrayList<>();
             Fit fit = fitRepository.findByName(fitName);
             for(SKU sku: list){
+            	if(sku.getName() == null){
+            		removeList.add(sku);
+            		continue;
+            	}
             	sku.setFit(fit);
+            }
+            for(SKU sku: removeList){
+            	list.remove(sku);
             }
             skuRepository.save(list);
 			

@@ -1,5 +1,10 @@
 package com.example.vmi;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,9 +34,15 @@ public class VmiApplication {
 	@Bean
 	CommandLineRunner init(StorageService storageService, EmployeeService employeeService) {
 		return (args) -> {
-            storageService.deleteAll();
             storageService.init();
             employeeService.save(new User(55555L,"Md Zahid Raza","zahid7292@gmail.com","8987525008","ROLE_ADMIN"));
 		};
+	}
+	
+	@Bean
+	public Mapper dozerBeanMapper(){
+       List<String> list = new ArrayList<>();
+       list.add("dozer_mapping.xml");
+       return new DozerBeanMapper(list);
 	}
 }

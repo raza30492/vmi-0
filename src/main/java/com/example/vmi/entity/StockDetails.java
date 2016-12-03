@@ -1,7 +1,5 @@
 package com.example.vmi.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,7 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "STOCK_DETAILS")
-public class StockDetails implements Serializable{
+public class StockDetails{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -164,4 +162,14 @@ public class StockDetails implements Serializable{
 	public void setUkOnOrder(int ukOnOrder) {
 		this.ukOnOrder = ukOnOrder;
 	}
+
+	@Override
+	public String toString() {
+		return "StockDetails [id=" + id + ", sku=" + sku + ", year=" + year + ", week=" + week + ", twWarehouseStock="
+				+ twWarehouseStock + ", twUkRetailStock=" + twUkRetailStock + ", twTotalStock=" + twTotalStock
+				+ ", twBackOrder=" + twBackOrder + ", twSales=" + twSales + ", lwSales=" + lwSales
+				+ ", twGoodsReceived=" + twGoodsReceived + ", cumUkSales=" + cumUkSales + ", ukOnOrder=" + ukOnOrder
+				+ "]";
+	}
+	
 }

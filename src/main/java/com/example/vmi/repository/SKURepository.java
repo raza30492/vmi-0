@@ -13,4 +13,5 @@ import com.example.vmi.entity.SKU;
 @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_MERCHANT')")
 public interface SKURepository extends JpaRepository<SKU, Long> {
 	List<SKU> findByFitName(@Param("fitName") String fitName);
+	SKU findByNameAndFitName(String skuName, String fitName);
 }

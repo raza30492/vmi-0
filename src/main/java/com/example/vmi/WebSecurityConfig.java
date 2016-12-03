@@ -16,6 +16,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.authorizeRequests()
 				.antMatchers("/api/emps/logon").permitAll()
+//				.antMatchers("/api/upload/").permitAll()
 				.anyRequest().fullyAuthenticated()
 		.and()
 			.httpBasic()
@@ -25,12 +26,3 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 }
 
-//http
-//.authorizeRequests()
-//.anyRequest()
-//.fullyAuthenticated()
-//.and()
-//.httpBasic()
-//.and()
-//.csrf()
-//.disable();
