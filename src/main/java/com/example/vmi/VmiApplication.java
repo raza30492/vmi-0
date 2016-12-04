@@ -18,6 +18,8 @@ import com.example.vmi.entity.Employee;
 import com.example.vmi.entity.Role;
 import com.example.vmi.repository.EmployeeRepository;
 import com.example.vmi.service.EmployeeService;
+import com.example.vmi.storage.ProposalStorageService;
+import com.example.vmi.storage.StockDetailStorageService;
 import com.example.vmi.storage.StorageProperties;
 import com.example.vmi.storage.StorageService;
 
@@ -32,9 +34,14 @@ public class VmiApplication {
 	}
 	
 	@Bean
-	CommandLineRunner init(StorageService storageService, EmployeeService employeeService) {
+	CommandLineRunner init(
+			StockDetailStorageService stockDetailStorageService, 
+			ProposalStorageService proposalStorageService, 
+			EmployeeService employeeService) {
+		
 		return (args) -> {
-            storageService.init();
+            stockDetailStorageService.init();
+            proposalStorageService.init();
             employeeService.save(new User(55555L,"Md Zahid Raza","zahid7292@gmail.com","8987525008","ROLE_ADMIN"));
 		};
 	}

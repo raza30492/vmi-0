@@ -24,7 +24,7 @@ public class Stock {
     private double twTotalStock;
     
     @CsvBindByName(column = "TW_BACK_ORDERS")
-    private double twBackOrders;
+    private double twBackOrder;
     
     @CsvBindByName(column = "TW_SALES_UNIT")
     private double twSales;
@@ -99,12 +99,12 @@ public class Stock {
 		this.twTotalStock = twTotalStock;
 	}
 
-	public double getTwBackOrders() {
-		return twBackOrders;
+	public double getTwBackOrder() {
+		return twBackOrder;
 	}
 
-	public void setTwBackOrders(double twBackOrders) {
-		this.twBackOrders = twBackOrders;
+	public void setTwBackOrder(double twBackOrder) {
+		this.twBackOrder = twBackOrder;
 	}
 
 	public double getTwSales() {
@@ -151,7 +151,7 @@ public class Stock {
 	public String toString() {
 		return "Stock [year=" + year + ", week=" + week + ", sku=" + skuName + ", fit=" + fit + ", twWarehouseStock="
 				+ twWarehouseStock + ", twUkRetailStock=" + twUkRetailStock + ", twTotalStock=" + twTotalStock
-				+ ", twBackOrders=" + twBackOrders + ", twSales=" + twSales + ", lwSales=" + lwSales
+				+ ", twBackOrders=" + twBackOrder + ", twSales=" + twSales + ", lwSales=" + lwSales
 				+ ", twGoodsReceived=" + twGoodsReceived + ", cumUkSales=" + cumUkSales + ", ukOnOrder=" + ukOnOrder
 				+ "]";
 	}

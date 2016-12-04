@@ -1,10 +1,11 @@
 package com.example.vmi.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.dozer.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 
 @Service
+@Transactional
 public class StockDetailService {
 	
 	@Autowired Mapper mapper;
@@ -66,7 +68,6 @@ public class StockDetailService {
             SKU sku = null;
             for(Stock stk: list){
             	if(stk.getSkuName() == null && stk.getFit() == null) continue;
-            	System.out.println(stk.getSkuName() + "," + stk.getFit());
             	
             	sku = skuRepository.findByNameAndFitName(stk.getSkuName(), stk.getFit());
             	if(sku == null){
@@ -98,4 +99,9 @@ public class StockDetailService {
 			e.printStackTrace();
 		}
 	}
+	
+	public void delete(int year, int week){
+		stockDetailsRepository.deleteByYearAndWeek(year, week);
+	}
+	
 }

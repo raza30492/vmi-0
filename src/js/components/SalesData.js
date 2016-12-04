@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 
-import { handleErrors } from '../utils/restUtil';
+import { handleErrors, headers } from '../utils/restUtil';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
@@ -18,6 +18,7 @@ import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
 import Section from 'grommet/components/Section';
+import Trash from "grommet/components/icons/base/Trash";
 
 import AppHeader from './AppHeader';
 
@@ -28,6 +29,7 @@ class SalesData extends Component {
     this.state = {
       uploading: false,
       showYear: '2016',
+      buyerName: sessionStorage.buyerName,
       year: '',
       week: '',
       files: [],
@@ -40,7 +42,8 @@ class SalesData extends Component {
   }
 
   _getSalesData () {
-    const { showYear } = this.state;
+    const { showYear, buyerName } = this.state;
+    console.log(this.state);
     const options = {
       method: 'get',
       headers: {
@@ -48,7 +51,7 @@ class SalesData extends Component {
         'Authorization': 'Basic ' + window.sessionStorage.token
       }
     };
-    fetch(window.serviceHost + "/upload/" + showYear, options)
+    fetch(window.serviceHost + "/stock/" + showYear +"?buyer=" + buyerName, options)
     .then(handleErrors)
     .then((response)=>{
       if (response.status == 200) {
@@ -64,8 +67,9 @@ class SalesData extends Component {
   }
 
   _upload (e) {
-    const { year, week } = this.state;
+    const { year, week, buyerName } = this.state;
     var data = new FormData();
+    data.append('buyer', buyerName);
     data.append('year', year);
     data.append('week', week);
     data.append("file", this.state.files[0]);
@@ -75,7 +79,7 @@ class SalesData extends Component {
       body: data
     };
 
-    fetch(window.serviceHost + "/upload/stock", options)
+    fetch(window.serviceHost + "/stock/", options)
     .then((response)=>{
       if (response.status == 200 || response.status == 201) {
         this.setState({uploading:false});
@@ -86,6 +90,44 @@ class SalesData extends Component {
     .catch((error)=>{
       console.log(error);
       this.setState({uploading:false});
+    });
+  }
+
+  _delete (url) {
+    console.log(url);
+    const options = { method: 'delete', headers: headers };
+
+    fetch(url , options)
+    .then(handleErrors)
+    .then((response)=>{
+      if (response.status == 204 || response.status == 200) {
+        console.log('file deleted successfully.');
+        this._getSalesData();
+      }
+    })
+    .catch((error)=>{
+      console.log(error);
+    });
+  }
+
+  _download (url, filename) {
+    const options = { method: 'get', headers: headers };
+
+    fetch(url, options)
+    .then(function(response) {
+      console.log(response);
+      return response.blob();
+    })
+    .then(function(myBlob) {
+      var downloadUrl = URL.createObjectURL(myBlob);
+      var a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+    })
+    .catch((error)=>{
+      console.log(error);
     });
   }
 
@@ -120,25 +162,6 @@ class SalesData extends Component {
     this.setState({uploading: false});
   }
 
-  _download (item, filename) {
-    fetch(item, {method: 'get', headers: { 'Authorization': 'Basic ' + window.sessionStorage.token }})
-    .then(function(response) {
-      console.log(response);
-      return response.blob();
-    })
-    .then(function(myBlob) {
-      var downloadUrl = URL.createObjectURL(myBlob);
-      var a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-    })
-    .catch((error)=>{
-      console.log(error);
-    });
-  }
-
   render () {
     const { files, uploading, sales, showYear } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
@@ -149,6 +172,7 @@ class SalesData extends Component {
           <span> {item.filename} </span>
           <span className="secondary">
             <Button icon={<DocumentDownload />} onClick={this._download.bind(this, item.href, item.filename)} />
+            <Button icon={<Trash />} onClick={this._delete.bind(this, item.href)} />
           </span>
         </ListItem>
       );
@@ -217,44 +241,3 @@ let select = (store) => {
 };
 
 export default connect(select)(SalesData);
-
-// <Box size="medium" alignSelf="center" pad={{vertical:'small'}}>
-//   <Table>
-//     <tbody>
-//       {data}
-//     </tbody>
-//   </Table>
-// </Box>
-
-// fetch(item, {method: 'get', headers: { 'Authorization': 'Basic ' + window.sessionStorage.token }})
-// .then(function(response) {
-//   console.log(response);
-//   return response.blob();
-// })
-// .then(function(myBlob) {
-//   var downloadUrl = URL.createObjectURL(myBlob);
-//   var a = document.createElement("a");
-//   a.href = downloadUrl;
-//   a.download = 'abc.xlsx';
-//   document.body.appendChild(a);
-//   a.click();
-// })
-// .catch((error)=>{
-//   console.log(error);
-// });
-//
-// console.log('download');
-// console.log(item);
-// var form = document.createElement("form");
-// form.method = "GET";
-// form.action = item;
-// // Create inputs
-// var usernameInput = document.createElement("input");
-// usernameInput.type = "text";
-// usernameInput.name = "year";
-// usernameInput.value = this.state.showYear;
-//
-// // Add the input to the form
-// form.appendChild(usernameInput);
-// // Just submit
-// form.submit();

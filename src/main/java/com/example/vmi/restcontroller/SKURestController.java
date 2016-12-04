@@ -9,12 +9,12 @@ import com.example.vmi.service.SkuService;
 import com.example.vmi.storage.StorageFileNotFoundException;
 
 @RestController
-@RequestMapping("/api/upload")
-public class FileUploadRestController {
+@RequestMapping("/api/sku")
+public class SKURestController {
 
     @Autowired private SkuService skuService;
 
-    @PostMapping("/sku")
+    @PostMapping("/upload")
     public ResponseEntity<Void> uploadSku(@RequestParam("fit") String fit, @RequestParam("file") MultipartFile file ) {
     	if(!file.isEmpty()){
     		skuService.addBatch(fit, file);
@@ -28,3 +28,4 @@ public class FileUploadRestController {
     }
 
 }
+

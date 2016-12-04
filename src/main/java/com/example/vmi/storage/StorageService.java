@@ -12,18 +12,18 @@ public interface StorageService {
 
     void init();
 
-    void store(int year, MultipartFile file, String filename) throws FileAlreadyExistsException;
+    void store(int buyerId, int year, MultipartFile file, String filename) throws FileAlreadyExistsException;
     
-    void store(int year, MultipartFile file) throws FileAlreadyExistsException;
+    void store(int buyerId, int year, MultipartFile file) throws FileAlreadyExistsException;
 
-    Stream<Path> loadAll(int year);
+    Stream<Path> loadAll(int buyerId, int year);
 
-    Path load(int year, String filename);
+    Path load(int buyerId, int year, String filename);
 
-    Resource loadAsResource(int year, String filename);
+    Resource loadAsResource(int buyerId, int year, String filename);
 
     void deleteAll();
     
-    void delete(int year, String filename);
+    void delete(int buyerId, int year, String filename);
 
 }
