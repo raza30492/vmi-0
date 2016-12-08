@@ -28,7 +28,8 @@ class Buyer extends Component {
     super();
     this.state = {
       buyerName: '',
-      href: null
+      href: null,
+      errors:[]
     };
   }
 
@@ -39,7 +40,7 @@ class Buyer extends Component {
   _addBuyer () {
     const { buyerName } = this.state;
     if (buyerName == null || buyerName == "") {
-      alert("Enetr Buyer Name First!");
+      this.setState({errors: ['Buyer Name cannot be blank']});
       return;
     }
     const buyer = {name: buyerName};
@@ -50,7 +51,7 @@ class Buyer extends Component {
   _editBuyer () {
     const { buyerName, href } = this.state;
     if (buyerName == null || buyerName == "") {
-      alert("Enetr Buyer Name First!");
+      this.setState({errors: ['Buyer Name cannot be blank']});
       return;
     }
     const buyer = {name: buyerName};
@@ -76,7 +77,7 @@ class Buyer extends Component {
       this.props.dispatch({type: TOGGLE_BUYER_ADD_FORM, payload: {adding: false}});
     else
       this.props.dispatch({type: TOGGLE_BUYER_EDIT_FORM, payload: {editing: false}});
-    this.setState({href: null, buyerName: ''});
+    this.setState({href: null, buyerName: '', errors: []});
   }
 
   _onChangeInput (e) {
@@ -104,7 +105,7 @@ class Buyer extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Add New Buyer</Heading></Header>
           <FormFields>
-              <FormField label="Buyer name" >
+              <FormField label="Buyer name" error={this.state.errors[0]}>
                 <input type="text" value={this.state.buyerName} onChange={this._onChangeInput.bind(this)} />
               </FormField>
           </FormFields>
@@ -120,7 +121,7 @@ class Buyer extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Edit Buyer</Heading></Header>
           <FormFields>
-              <FormField label="Buyer name" >
+              <FormField label="Buyer name" error={this.state.errors[0]}>
                 <input type="text" value={this.state.buyerName} onChange={this._onChangeInput.bind(this)}/>
               </FormField>
           </FormFields>

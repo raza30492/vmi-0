@@ -37,7 +37,8 @@ class SKU extends Component {
       fitName: null,
       skuName: '',
       skus : [],
-      files: []
+      files: [],
+      errors:[]
     };
     this._onDrop = this._onDrop.bind(this);
     this._getSkus = this._getSkus.bind(this);
@@ -71,7 +72,7 @@ class SKU extends Component {
   _getSkus (fit) {
     //console.log('getSku()');
     this.setState({fetching: true});
-    const options = {method: 'GET', headers: {...headers}};
+    const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(window.serviceHost + '/skus/search/findByFitName?fitName=' + fit, options)
     .then(handleErrors)
     .then(response => response.json())
@@ -91,10 +92,14 @@ class SKU extends Component {
   _addSku () {
     console.log('addSku()');
     const { fitName, skuName} = this.state;
+    if (skuName == ''){
+      this.setState({errors: ['SKU Name cannot be blank']});
+      return;
+    }
     const fit = this.props.fit.fits.find(fit=>fit.name==fitName).href;
     const sku = { name: skuName, fit: fit };
     console.log(sku);
-    const options = {method: 'POST', headers: {...headers}, body: JSON.stringify(sku)};
+    const options = {method: 'POST', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(sku)};
     fetch(window.serviceHost + '/skus', options)
     .then(handleErrors)
     .then((response) => {
@@ -113,13 +118,17 @@ class SKU extends Component {
   }
 
   _addBatchSku (e) {
+    if (this.state.files.length == 0){
+      this.setState({errors: ['','Choose excel file containing SKU']});
+      return;
+    }
     const { fitName } = this.state;
     var data = new FormData();
     data.append('fit', fitName);
     data.append("file", this.state.files[0]);
     const options = {
       method: 'post',
-      headers: { 'Authorization': 'Basic ' + window.sessionStorage.token },
+      headers: { 'Authorization': 'Basic ' + sessionStorage.token },
       body: data
     };
 
@@ -139,15 +148,14 @@ class SKU extends Component {
 
   _editSku () {
     //console.log('editSku()');
-    const { url, fitName, buyerName, skuName} = this.state;
-    if (buyerName.includes('Select Buyer')) {
-      alert("Select Buyer First");
+    const { url, fitName,skuName} = this.state;
+    if (skuName == ''){
+      this.setState({errors: ['SKU Name cannot be blank']});
       return;
     }
     const fit = this.props.fit.fits.find(fit=>fit.name==fitName).href;
-    const buyer = this.props.buyer.buyers.find(buyer=>buyer.name==buyerName).href;
-    const sku = { name: skuName, fit: fit, buyer: buyer};
-    const options = {method: 'PUT', headers: {...headers}, body: JSON.stringify(sku)};
+    const sku = { name: skuName, fit: fit};
+    const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(sku)};
     fetch(url, options)
     .then(handleErrors)
     .then((response) => {
@@ -167,7 +175,7 @@ class SKU extends Component {
 
   _removeSku (url) {
     //console.log('removeSku()');
-    const options = {method: 'DELETE', headers: {...headers}};
+    const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(url, options)
     .then(handleErrors)
     .then(response => {
@@ -214,7 +222,7 @@ class SKU extends Component {
     else if (layer == 'edit')
       this.setState({editing: false});
 
-    //this.setState({href: null, fitName: ''});
+    this.setState({errors: [], files: []});
   }
 
   _onDrop (files) {
@@ -258,7 +266,7 @@ class SKU extends Component {
             <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
-            <FormField label="SKU name" >
+            <FormField label="SKU name" error={this.state.errors[0]}>
               <input type="text" value={skuName} onChange={this._onChangeInput.bind(this)} />
             </FormField>
           </FormFields>
@@ -287,7 +295,7 @@ class SKU extends Component {
             <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
-            <FormField label="Excel File containing SKU" >
+            <FormField label="Excel File containing SKU" error={this.state.errors[1]} >
               <Dropzone style={style} onDrop={this._onDrop} accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' >
                 {content}
               </Dropzone>
@@ -308,7 +316,7 @@ class SKU extends Component {
             <FormField>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
-            <FormField label="SKU name" >
+            <FormField label="SKU name" error={this.state.errors[0]}>
               <input type="text" value={skuName} onChange={this._onChangeInput.bind(this)} />
             </FormField>
           </FormFields>

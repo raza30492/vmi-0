@@ -1,4 +1,4 @@
-import { handleErrors, headers } from './utils/restUtil';
+import { handleErrors, headers} from './utils/restUtil';
 
 /////////////////////////  Navigation ////////////////////////////////////////////////////
 export const NAV_ACTIVATE = 'NAV_ACTIVATE';
@@ -23,8 +23,7 @@ export const TOGGLE_FIT_EDIT_FORM = 'TOGGLE_FIT_EDIT_FORM';
 export function getFits () {
   return function (dispatch) {
     dispatch({type:FIT_FETCH_PROGRESS});
-    console.log(headers);
-    const options = {method: 'GET', headers: {...headers}};
+    const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(window.serviceHost + '/fits', options)
     .then(handleErrors)
     .then(response => response.json())
@@ -43,7 +42,7 @@ export function getFits () {
 
 export function addFit (fit) {
   return function (dispatch) {
-    const options = {method: 'POST', headers: {...headers}, body: JSON.stringify(fit)};
+    const options = {method: 'POST', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(fit)};
     fetch(window.serviceHost + '/fits', options)
     .then(handleErrors)
     .then((response) => {
@@ -64,7 +63,7 @@ export function addFit (fit) {
 
 export function editFit (url, fit) {
   return function (dispatch) {
-    const options = {method: 'PUT', headers: {...headers}, body: JSON.stringify(fit)};
+    const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(fit)};
     fetch(url, options)
     .then(handleErrors)
     .then((response) => {
@@ -85,7 +84,7 @@ export function editFit (url, fit) {
 
 export function removeFit (url) {
   return function (dispatch) {
-    const options = {method: 'DELETE', headers: {...headers}};
+    const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(url, options)
     .then(handleErrors)
     .then(response => {
@@ -119,7 +118,7 @@ export function getBuyers () {
   return function (dispatch) {
     dispatch({type:BUYER_FETCH_PROGRESS});
 
-    const options = {method: 'GET', headers: {...headers}};
+    const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(window.serviceHost + '/buyers', options)
     .then(handleErrors)
     .then(response => response.json())
@@ -138,7 +137,7 @@ export function getBuyers () {
 
 export function addBuyer (buyer) {
   return function (dispatch) {
-    const options = {method: 'POST', headers: {...headers}, body: JSON.stringify(buyer)};
+    const options = {method: 'POST', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(buyer)};
     fetch(window.serviceHost + '/buyers', options)
     .then(handleErrors)
     .then((response) => {
@@ -159,7 +158,7 @@ export function addBuyer (buyer) {
 
 export function editBuyer (url, buyer) {
   return function (dispatch) {
-    const options = {method: 'PUT', headers: {...headers}, body: JSON.stringify(buyer)};
+    const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(buyer)};
     fetch(url, options)
     .then(handleErrors)
     .then((response) => {
@@ -180,7 +179,7 @@ export function editBuyer (url, buyer) {
 
 export function removeBuyer (url) {
   return function (dispatch) {
-    const options = {method: 'DELETE', headers: {...headers}};
+    const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(url, options)
     .then(handleErrors)
     .then(response => {
@@ -205,8 +204,7 @@ export const AUTH_FAIL = 'AUTH_FAIL';
 export function authenticate (credential) {
   return function (dispatch) {
     dispatch({type:AUTH_PROGRESS});
-    const header = {'Content-Type': 'application/json', 'Accept': 'application/json'};
-    const options = {method: 'post', headers: header, body: JSON.stringify(credential)};
+    const options = {method: 'post', headers: headers, body: JSON.stringify(credential)};
     fetch(window.serviceHost + "/emps/logon", options)
     .then(handleErrors)
     .then((response)=>{

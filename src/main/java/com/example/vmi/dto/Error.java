@@ -4,15 +4,13 @@ import java.util.List;
 
 import com.example.vmi.entity.SKU;
 
-public class StockMissing {
+public class Error {
 	private String code;
 	private List<String> fitsMissing;
-	private List<SKU> skusMissing;
-	public StockMissing() {
-		super();
+	private List<SKUMissing> skusMissing;
+	public Error() {
 	}
-	public StockMissing(String code) {
-		super();
+	public Error(String code) {
 		this.code = code;
 	}
 	public String getCode() {
@@ -27,10 +25,15 @@ public class StockMissing {
 	public void setFitsMissing(List<String> fitsMissing) {
 		this.fitsMissing = fitsMissing;
 	}
-	public List<SKU> getSkusMissing() {
+	public List<SKUMissing> getSkusMissing() {
 		return skusMissing;
 	}
-	public void setSkusMissing(List<SKU> skusMissing) {
+	public void setSkusMissing(List<SKUMissing> skusMissing) {
 		this.skusMissing = skusMissing;
 	}
+	@Override
+	public String toString() {
+		return "Error [code=" + code + ", fitsMissing=" + fitsMissing + ", skusMissing=" + skusMissing + "]";
+	}
+	
 }

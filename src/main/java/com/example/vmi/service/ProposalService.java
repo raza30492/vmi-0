@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.vmi.dto.SKUMissing;
+import com.example.vmi.dto.Error;
 import com.example.vmi.dto.Proposal;
 import com.example.vmi.dto.ProposalData;
 import com.example.vmi.entity.Fit;
@@ -32,29 +34,50 @@ public class ProposalService {
 	
 	@Autowired FitRepository fitRepository;
 
-	public void calculateProposal(ProposalData data){
-		List<StockDetails> prevStocks = stockDetailsRepository.findByYearAndWeekAndSkuFitName((data.getYear()-1), 51, data.getFitName());
+	public void calculateProposal(ProposalData data, Error error){
+		//Check if current year proposed week data is empty
+		if(stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek(), data.getFitName()).isEmpty()){
+			error.setCode("CURRENT_YEAR_DATA_NOT_FOUND");
+			return;
+		}
+		//Check if previous year week 51 data is empty
+		if(stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear()-1, 51, data.getFitName()).isEmpty()){
+			error.setCode("PREVIOUS_YEAR_DATA_NOT_FOUND");
+			return;
+		}
+		
+		List<StockDetails> prevStocks = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek(), data.getFitName());
+		List<SKUMissing> skusMissing = new ArrayList<>();
 		List<Proposal> proposalList = new ArrayList<>();
 		int sumTotalCumSales = 0;
-		
 		StockDetails tmpStockDetails = null;
 		Proposal tmpProposal = null;
+		
 		for(StockDetails stk : prevStocks){
-			tmpStockDetails = stockDetailsRepository.findByYearAndWeekAndSku(data.getYear(), data.getWeek(), stk.getSku());
+			tmpStockDetails = stockDetailsRepository.findByYearAndWeekAndSku((data.getYear()-1), 51, stk.getSku());
+			if(tmpStockDetails == null){
+				skusMissing.add(new SKUMissing(stk.getSku().getFit().getName(), stk.getSku().getName()));
+			}
 			
 			tmpProposal = new Proposal();
 			tmpProposal.setSkuId(stk.getSku().getId());
 			tmpProposal.setSkuName(stk.getSku().getName());
 			tmpProposal.setFitName(stk.getSku().getFit().getName());
-			tmpProposal.setCumSale1(stk.getCumUkSales());
-			tmpProposal.setCumSale0(tmpStockDetails.getCumUkSales());
+			tmpProposal.setCumSale0(stk.getCumUkSales());
+			tmpProposal.setCumSale1(tmpStockDetails.getCumUkSales());
 			tmpProposal.setTotalCumSale((stk.getCumUkSales() + tmpStockDetails.getCumUkSales()));
 			sumTotalCumSales += tmpProposal.getTotalCumSale();
-			tmpProposal.setBackOrder(tmpStockDetails.getTwBackOrder());
-			tmpProposal.setOnStock(tmpStockDetails.getTwTotalStock());
-			tmpProposal.setOnOrder(tmpStockDetails.getUkOnOrder());
+			tmpProposal.setBackOrder(stk.getTwBackOrder());
+			tmpProposal.setOnStock(stk.getTwTotalStock());
+			tmpProposal.setOnOrder(stk.getUkOnOrder());
 			
 			proposalList.add(tmpProposal);
+		}
+		
+		if(skusMissing.size() > 0){
+			error.setCode("HISTORY_SKUS_MISSING");
+			error.setSkusMissing(skusMissing);
+			return;
 		}
 		
 		for(Proposal proposal: proposalList){
@@ -107,7 +130,7 @@ public class ProposalService {
 			if(!Files.exists(summaryDir, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})){
         		Files.createDirectory(summaryDir);
         	}
-			
+			//Delete if Files Exist
 			Files.deleteIfExists(pathMain);
 			Files.deleteIfExists(pathSummary);
 			

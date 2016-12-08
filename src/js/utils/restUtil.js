@@ -1,7 +1,6 @@
 export const headers = {
   'Accept': 'application/json',
-  'Content-Type': 'application/json',
-  'Authorization': 'Basic ' + window.sessionStorage.token
+  'Content-Type': 'application/json'
 };
 
 export default function handleErrors (response) {

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.example.vmi.dto.StockMissing;
+import com.example.vmi.dto.Error;
 import com.example.vmi.entity.Buyer;
 import com.example.vmi.entity.SKU;
 import com.example.vmi.service.BuyerService;
@@ -92,31 +92,22 @@ public class StockRestController {
     	}else if(file.getOriginalFilename().contains("xls")){
     		filename = "Sales_Week" + week + "_Year" + year + ".xls";
     	}else{
-    		return new ResponseEntity<StockMissing>(new StockMissing("FILE_NOT_SUPPORTED"), HttpStatus.CONFLICT);
+    		return new ResponseEntity<Error>(new Error("FILE_NOT_SUPPORTED"), HttpStatus.CONFLICT);
     	}
     	
     	try {
 			storageService.store(buyer.getId(), year, file, filename);
 		} catch (FileAlreadyExistsException e) {
-			return new ResponseEntity<StockMissing>(new StockMissing("FILE_ALREADY_EXIST"), HttpStatus.CONFLICT);
+			return new ResponseEntity<Error>(new Error("FILE_ALREADY_EXIST"), HttpStatus.CONFLICT);
 		}
-    	
-    	List<String> fitsMissing = new ArrayList<>();
-    	List<SKU> skusMissing = new ArrayList<>();
-    	stockDetailService.addBatch(year, week, storageService.load(buyer.getId(), year, filename).toFile(), fitsMissing, skusMissing);
-    	
-    	if(fitsMissing.size() > 0){
+
+    	Error error = new Error();
+    	stockDetailService.addBatch(year, week, storageService.load(buyer.getId(), year, filename).toFile(), error );
+    	System.out.println(error);
+    	if(error.getCode() != null){
+    		System.out.println("check");
     		storageService.delete(buyer.getId(), year, filename);
-    		
-    		StockMissing missing = new StockMissing("FITS_MISSING");
-    		missing.setFitsMissing(fitsMissing);
-    		return new ResponseEntity<StockMissing>(missing, HttpStatus.CONFLICT);
-    	}else if(skusMissing.size() > 0){
-    		storageService.delete(buyer.getId(), year, filename);
-    		
-    		StockMissing missing = new StockMissing("SKUS_MISSING");
-    		missing.setSkusMissing(skusMissing);
-    		return new ResponseEntity<StockMissing>(missing, HttpStatus.CONFLICT);
+    		return new ResponseEntity<Error>(error, HttpStatus.CONFLICT);
     	}
     	return new ResponseEntity<Void>(HttpStatus.OK);
     }

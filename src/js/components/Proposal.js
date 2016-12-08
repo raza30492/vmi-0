@@ -18,13 +18,12 @@ import Layer from 'grommet/components/Layer';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
+import Notification from 'grommet/components/Notification';
 import Section from 'grommet/components/Section';
 import Select from 'grommet/components/Select';
 // import Spinning from 'grommet/components/icons/Spinning';
 import Tab from 'grommet/components/Tab';
 import Tabs from 'grommet/components/Tabs';
-// import Table from 'grommet/components/Table';
-// import TableRow from 'grommet/components/TableRow';
 import Trash from "grommet/components/icons/base/Trash";
 
 
@@ -32,6 +31,9 @@ class Proposal extends Component {
   constructor () {
 	  super();
     this.state = {
+      isClose: true,  // Whether Notification is closed
+      status: '', //Notification status [ok, critical, warning]
+      message: '',  //Notification message
       fetching: false,  //fetching proposals
       calculating: false,
       fitLoaded: false,
@@ -39,7 +41,9 @@ class Proposal extends Component {
       mainProposals: [],
       summaryProposals: [],
       year: '2016',
-      data: {} //request data for Calculate rest call
+      data: {}, //request data for Calculate rest call
+      skuFlag: false, // Show missing Sku Layer
+      missingSkus: []
     };
   }
 
@@ -66,7 +70,7 @@ class Proposal extends Component {
   }
 
   _getProposals (fitName) {
-    const options = {method: 'GET', headers: {...headers}};
+    const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     //fetch main Proposals
     let url = window.serviceHost + '/proposals/main/' + this.state.year + '?fitName=' + fitName;
     console.log(url);
@@ -100,13 +104,23 @@ class Proposal extends Component {
   _calculateProposal () {
     const { data, fitName } = this.state;
     console.log(data);
-    const options = {method: 'post', headers: headers, body: JSON.stringify(data)};
+    const options = {method: 'post', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(data)};
     fetch(window.serviceHost + '/proposals/', options)
     .then(handleErrors)
     .then((response)=>{
       if ( response.status == 201 || response.status == 200) {
         this._getProposals(fitName);
         this.setState({calculating: false});
+      }else if (response.status == 409) {
+        response.json().then((resp)=>{
+          if (resp.code == "CURRENT_YEAR_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Sales Data is not uploaded.'});
+          } else if (resp.code == "PREVIOUS_YEAR_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Previous year Sales Data is not uploaded.'});
+          } else if (resp.code == "HISTORY_SKUS_MISSING") {
+            this.setState({calculating: false, skuFlag: true, missingSkus: resp.skusMissing});
+          }
+        });
       }
     })
     .catch((error)=>{
@@ -116,7 +130,7 @@ class Proposal extends Component {
   }
 
   _download (url, filename) {
-    const options = { method: 'get', headers: headers };
+    const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token} };
 
     fetch(url, options)
     .then(function(response) {
@@ -170,9 +184,15 @@ class Proposal extends Component {
     this.setState({calculating: false});
   }
 
+  _onClose () {
+    this.setState({isClose: true, message: null, status: null});
+  }
+
   render () {
     const { fits } = this.props.fit;
-    const { fitName, year, mainProposals, summaryProposals, calculating, data } = this.state;
+    const { fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus } = this.state;
+
+    const notification = isClose ? null : (<Notification full={false} closer={true} message={message} status={status} size="medium" onClose={this._onClose.bind(this)} /> );
 
     const fitItems = fits.map(fit=> fit.name); //Fit Filter all values
     const mainCount = mainProposals.length;
@@ -200,6 +220,27 @@ class Proposal extends Component {
         </ListItem>
       );
     });
+
+    let missingSkuItems = missingSkus.map((item, i)=>{
+      return (
+        <ListItem key={i} justify="between" pad={{vertical:'small',horizontal:'small'}}>
+          <span>{item.sku}</span>
+          <span className="secondary">{item.fit}</span>
+        </ListItem>
+      );
+    });
+
+    const layerMissingSkus = (
+      <Layer hidden={!skuFlag}  onClose={this._onCloseLayer.bind(this, 'sku')}  closer={true} align="center">
+        <Box size="large"  pad={{vertical: 'none', horizontal:'small'}}>
+          <Header><Heading tag="h4" strong={true} >These Skus are Missing, Add them first.</Heading></Header>
+          <List>
+            {missingSkuItems}
+          </List>
+        </Box>
+        <Box pad={{vertical: 'medium', horizontal:'small'}}/>
+      </Layer>
+    );
 
     const layerCalculate = (
       <Layer hidden={!calculating} onClose={this._onCloseLayer.bind(this)}  closer={true} align="center">
@@ -233,6 +274,7 @@ class Proposal extends Component {
 		  <div>
 		    <AppHeader />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
+          <Box>{notification}</Box>
           <Box direction="row" size="xxlarge" alignSelf="center" pad={{vertical:'small'}}>
             <Box><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></Box>
             <Box><input type="text"  value={year} onChange={this._onChange.bind(this)} /></Box>
@@ -259,6 +301,7 @@ class Proposal extends Component {
           </Box>
         </Section>
         {layerCalculate}
+        {layerMissingSkus}
 			</div>
     );
   }

@@ -1,6 +1,7 @@
 package com.example.vmi.restcontroller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.example.vmi.dto.SKUMissing;
 import com.example.vmi.dto.ProposalData;
+import com.example.vmi.dto.Error;
 import com.example.vmi.entity.Fit;
 import com.example.vmi.service.FitService;
 import com.example.vmi.service.ProposalService;
@@ -38,8 +41,11 @@ public class ProposalRestController {
 	
 	@PostMapping("/")
     public ResponseEntity<?> calculateProposal(@RequestBody ProposalData data){
-
-		proposalService.calculateProposal(data);  	
+		Error error = new Error();
+		proposalService.calculateProposal(data, error); 
+		if( error.getCode() != null){
+			return new ResponseEntity<Error>(error, HttpStatus.CONFLICT);
+		}
     	return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 	

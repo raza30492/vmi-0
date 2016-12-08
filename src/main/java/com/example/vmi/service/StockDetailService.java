@@ -11,6 +11,8 @@ import org.dozer.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.vmi.dto.Error;
+import com.example.vmi.dto.SKUMissing;
 import com.example.vmi.dto.Stock;
 import com.example.vmi.entity.Fit;
 import com.example.vmi.entity.SKU;
@@ -35,7 +37,7 @@ public class StockDetailService {
 	
 	@Autowired StockDetailsRepository stockDetailsRepository;
 
-	public void addBatch(Integer year, Integer week, File file, List<String> fitsMissing, List<SKU> skusMissing){
+	public void addBatch(Integer year, Integer week, File file, Error error){
 		try{
 			//Convert to csv String
 			String output = null;
@@ -54,6 +56,7 @@ public class StockDetailService {
             
             //Check if Each Fit exists
             Fit fit = null;
+            List<String> fitsMissing = new ArrayList<>();
             for(Stock stk: list){
             	if(stk.getSkuName() == null && stk.getFit() == null) continue;
             	
@@ -62,21 +65,29 @@ public class StockDetailService {
             		fitsMissing.add(stk.getFit());
             	}
             }
-            if(fitsMissing.size() > 0)	return;
+            if(fitsMissing.size() > 0){
+            	error.setCode("FITS_MISSING");
+            	error.setFitsMissing(fitsMissing);
+            	return;
+            }
             
             //Check if each SKU exists
             SKU sku = null;
+            List<SKUMissing> skusMissing = new ArrayList<>();
             for(Stock stk: list){
             	if(stk.getSkuName() == null && stk.getFit() == null) continue;
             	
             	sku = skuRepository.findByNameAndFitName(stk.getSkuName(), stk.getFit());
             	if(sku == null){
-            		System.out.println("check");
             		fit = fitRepository.findByName(stk.getFit());
-            		skusMissing.add(new SKU(stk.getSkuName(), fit));
+            		skusMissing.add(new SKUMissing(fit.getName(), stk.getSkuName()));
             	}
             }
-            if(skusMissing.size() > 0) return;
+            if(skusMissing.size() > 0){
+            	error.setCode("SKUS_MISSING");
+            	error.setSkusMissing(skusMissing);
+            	return;
+            }
             
             
             //Convert from DTO to Entity

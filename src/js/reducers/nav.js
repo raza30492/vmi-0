@@ -4,7 +4,7 @@
 import { NAV_ACTIVATE } from "../actions";
 
 const initialState = {
-  active: true,
+  active: false,
   itemsAdmin:[
     { path: '/', label: 'Dashboard'},
     { path: '/buyer', label: 'Buyer'},

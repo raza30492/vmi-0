@@ -27,6 +27,7 @@ class AppHeader extends Component {
     sessionStorage.role = null;
     sessionStorage.buyerName = null;
     sessionStorage.buyerHref = null;
+    this.props.dispatch(navActivate(false));
   }
 
   render () {
@@ -60,7 +61,7 @@ class AppHeader extends Component {
     }
 
     return (
-      <Header size="large" justify="between" colorIndex="neutral-2" pad={{"horizontal": "medium"}}>
+      <Header size="large" justify="between" colorIndex="neutral-2" pad={{horizontal: "medium"}}>
         {title}
         {login}
       </Header>

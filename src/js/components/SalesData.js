@@ -17,8 +17,10 @@ import Layer from 'grommet/components/Layer';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
+//import Notification from 'grommet/components/Notification';
 import Section from 'grommet/components/Section';
 import Trash from "grommet/components/icons/base/Trash";
+import TextInput from 'grommet/components/TextInput';
 
 import AppHeader from './AppHeader';
 
@@ -33,7 +35,13 @@ class SalesData extends Component {
       year: '',
       week: '',
       files: [],
-      sales: []
+      sales: [],
+      missingFits: [],
+      fitFlag: false, //whether to show missing fit layer or not
+      missingSkus: [],
+      skuFlag: false, //whether to show missing sku layer or not
+      errors: [],
+      errorMessage: ''
     };
   }
 
@@ -43,20 +51,12 @@ class SalesData extends Component {
 
   _getSalesData () {
     const { showYear, buyerName } = this.state;
-    console.log(this.state);
-    const options = {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Basic ' + window.sessionStorage.token
-      }
-    };
+    const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(window.serviceHost + "/stock/" + showYear +"?buyer=" + buyerName, options)
     .then(handleErrors)
     .then((response)=>{
       if (response.status == 200) {
         response.json().then((data)=>{
-          console.log(data);
           this.setState({sales: data});
         });
       }
@@ -68,6 +68,23 @@ class SalesData extends Component {
 
   _upload (e) {
     const { year, week, buyerName } = this.state;
+    let errors = [];
+    let isError = false;
+    if (year == ''){
+      errors[0] = "Year cannot be blank";
+      isError = true;
+    }
+    if (week == ''){
+      errors[1] = "Week cannot be blank";
+      isError = true;
+    }
+    if (this.state.files.length == 0){
+      errors[2] = "Choose Excel file containing Sales Data";
+      isError = true;
+    }
+    this.setState({errors: errors});
+    if(isError) return;
+
     var data = new FormData();
     data.append('buyer', buyerName);
     data.append('year', year);
@@ -75,7 +92,7 @@ class SalesData extends Component {
     data.append("file", this.state.files[0]);
     const options = {
       method: 'post',
-      headers: { 'Authorization': 'Basic ' + window.sessionStorage.token },
+      headers: { 'Authorization': 'Basic ' + sessionStorage.token },
       body: data
     };
 
@@ -84,8 +101,23 @@ class SalesData extends Component {
       if (response.status == 200 || response.status == 201) {
         this.setState({uploading:false});
         this._getSalesData();
+      }else if (response.status == 409) {
+        response.json().then((data)=>{
+          const { code } = data;
+          if (code == 'FITS_MISSING') {
+            this.setState({uploading: false, missingFits: data.fitsMissing, fitFlag: true});
+          }else if (code == 'SKUS_MISSING') {
+            this.setState({uploading: false, missingSkus: data.skusMissing, skuFlag: true});
+          }else if (code == 'FILE_ALREADY_EXIST') {
+            this.setState({errorMessage:'File Already Exist. Delete existing file first to replace.'});
+          }else if (code == 'FILE_NOT_SUPPORTED') {
+            let { errors} = this.state;
+            errors[2] = 'Only .xls and .xlsx files are supported.';
+            this.setState({errors: errors});
+          }
+
+        });
       }
-      console.log(response);
     })
     .catch((error)=>{
       console.log(error);
@@ -94,8 +126,7 @@ class SalesData extends Component {
   }
 
   _delete (url) {
-    console.log(url);
-    const options = { method: 'delete', headers: headers };
+    const options = { method: 'delete', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
 
     fetch(url , options)
     .then(handleErrors)
@@ -111,11 +142,10 @@ class SalesData extends Component {
   }
 
   _download (url, filename) {
-    const options = { method: 'get', headers: headers };
+    const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
 
     fetch(url, options)
     .then(function(response) {
-      console.log(response);
       return response.blob();
     })
     .then(function(myBlob) {
@@ -132,7 +162,6 @@ class SalesData extends Component {
   }
 
   _onAddClick () {
-    console.log('onAddClick()');
     this.setState({uploading: true});
   }
 
@@ -149,7 +178,6 @@ class SalesData extends Component {
   }
 
   _onDrop (files) {
-    console.log('onDrop()');
     if (files.length > 1) {
       alert("Select Only 1 File.");
       this.setState({files: []});
@@ -159,11 +187,16 @@ class SalesData extends Component {
   }
 
   _onCloseLayer (layer) {
-    this.setState({uploading: false});
+    if (layer == 'upload')
+      this.setState({uploading: false,errorMessage: '', errors: []});
+    else if (layer == 'fit')
+      this.setState({fitFlag: false, missingFits: []});
+    else if (layer == 'sku')
+      this.setState({skuFlag: false, missingSkus: []});
   }
 
   render () {
-    const { files, uploading, sales, showYear } = this.state;
+    const { files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
     const count = sales.length;
     let listItems = sales.map((item, i) => {
@@ -189,18 +222,57 @@ class SalesData extends Component {
       paddingTop: 35,
       margin: 'auto'
     };
+    let missingFitItems = missingFits.map((item, i)=>{
+      return (<ListItem key={i} >{item}</ListItem>);
+    });
+
+    let missingSkuItems = missingSkus.map((item, i)=>{
+      return (
+        <ListItem key={i} justify="between" pad={{vertical:'small',horizontal:'small'}}>
+          <span>{item.sku}</span>
+          <span className="secondary">{item.fit}</span>
+        </ListItem>
+      );
+    });
+
+    const layerMissingFits = (
+      <Layer hidden={!fitFlag}  onClose={this._onCloseLayer.bind(this, 'fit')}  closer={true} align="center">
+        <Box size="medium"  pad={{vertical: 'none', horizontal:'small'}}>
+          <Header><Heading tag="h4" strong={true} >These Fits are Missing, Add them first.</Heading></Header>
+          <List>
+            {missingFitItems}
+          </List>
+        </Box>
+        <Box pad={{vertical: 'medium', horizontal:'small'}}/>
+      </Layer>
+    );
+
+    const layerMissingSkus = (
+      <Layer hidden={!skuFlag}  onClose={this._onCloseLayer.bind(this, 'sku')}  closer={true} align="center">
+        <Box size="large"  pad={{vertical: 'none', horizontal:'small'}}>
+          <Header><Heading tag="h4" strong={true} >These Skus are Missing, Add them first.</Heading></Header>
+          <List>
+            {missingSkuItems}
+          </List>
+        </Box>
+        <Box pad={{vertical: 'medium', horizontal:'small'}}/>
+      </Layer>
+    );
+
     const layerUpload = (
-      <Layer hidden={!uploading} onClose={this._onCloseLayer.bind(this)}  closer={true} align="center">
+      <Layer hidden={!uploading} onClose={this._onCloseLayer.bind(this, 'upload')}  closer={true} align="center">
         <Form>
           <Header><Heading tag="h3" strong={true}>Upload Sales Data</Heading></Header>
+          <h4 style={{color:'red'}}>{errorMessage}</h4>
+
           <FormFields>
-            <FormField label="Year" >
+            <FormField label="Year" error={errors[0]}>
               <input type="text" name="year" value={this.state.year} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week" >
+            <FormField label="Week" error={errors[1]}>
               <input type="text" name="week" value={this.state.week} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Excel File containing Sales Data" >
+            <FormField label="Excel File containing Sales Data" error={errors[2]} >
               <Dropzone style={style} onDrop={this._onDrop.bind(this)} accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel' >
                 {content}
               </Dropzone>
@@ -218,7 +290,7 @@ class SalesData extends Component {
 		    <AppHeader />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" size="medium" alignSelf="center" pad={{vertical:'small'}}>
-            <Box><input type="text"  value={showYear} onChange={this._onChange.bind(this)} /></Box>
+            <Box><TextInput  value={showYear} onDOMChange={this._onChange.bind(this)} /></Box>
             <Box><Button label="View Sales Data" onClick={this._getSalesData.bind(this)} /></Box>
           </Box>
           <Box size="large" alignSelf="center" >
@@ -231,6 +303,8 @@ class SalesData extends Component {
           </Box>
         </Section>
         {layerUpload}
+        {layerMissingFits}
+        {layerMissingSkus}
 			</div>
     );
   }
