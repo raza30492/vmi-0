@@ -1,6 +1,7 @@
 node_modules/
 target/
 data/
+node/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
