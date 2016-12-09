@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
+import history from '../history';
 
 //import Header from 'grommet/components/Header';
 //import Title from 'grommet/components/Title';
@@ -13,10 +14,11 @@ class Dashboard extends Component {
 
   }
 
-  componentDidMount () {
+  componentWillMount () {
     const {token} = window.sessionStorage;
     if ((token == null || token == 'null' )) {
-      this.context.router.push('/logon');
+      //this.context.router.push('/logon');
+      history.push('/logon');
     }
   }
 
@@ -34,9 +36,9 @@ class Dashboard extends Component {
   }
 }
 
-Dashboard.contextTypes = {
-  router: React.PropTypes.object.isRequired
-};
+// Dashboard.contextTypes = {
+//   router: React.PropTypes.object.isRequired
+// };
 
 let select = (store) => {
   return { nav: store.nav, user: store.user};

@@ -321,7 +321,7 @@ class User extends Component {
             </ListItem>}
           </List>
         </Box>
-        <Box pad={{vertical: 'medium', horizontal:'small'}}></Box>
+        <Box pad={{vertical: 'medium', horizontal:'small'}} />
       </Layer>
     );
 

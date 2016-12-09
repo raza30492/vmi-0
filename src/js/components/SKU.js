@@ -92,7 +92,7 @@ class SKU extends Component {
   _addSku () {
     console.log('addSku()');
     const { fitName, skuName} = this.state;
-    if (skuName == ''){
+    if (skuName == '') {
       this.setState({errors: ['SKU Name cannot be blank']});
       return;
     }
@@ -118,7 +118,7 @@ class SKU extends Component {
   }
 
   _addBatchSku (e) {
-    if (this.state.files.length == 0){
+    if (this.state.files.length == 0) {
       this.setState({errors: ['','Choose excel file containing SKU']});
       return;
     }
@@ -149,7 +149,7 @@ class SKU extends Component {
   _editSku () {
     //console.log('editSku()');
     const { url, fitName,skuName} = this.state;
-    if (skuName == ''){
+    if (skuName == '') {
       this.setState({errors: ['SKU Name cannot be blank']});
       return;
     }

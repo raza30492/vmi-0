@@ -28,7 +28,7 @@ class Logon extends Component {
   render () {
     const { error } = this.props.user;
     return (
-      <Box pad={{horizontal: 'large'}} wrap={true}  full="vertical" texture="url(img/back.jpg)" >
+      <Box pad={{horizontal: 'large'}} wrap={true}  full="vertical" texture="url(/vmi/static/img/back.jpg)" >
         <Box style={{marginTop: 250}} align="end" justify="end" pad={{"horizontal": "large", vertical:"large", between:"large"}}>
           <Box  align="center" separator="all" justify="center" colorIndex="light-1" pad={{"horizontal": "none", vertical:"none", between:"small"}} >
             <LoginForm onSubmit={this._login.bind(this)} title="Vendor Managed Inventory"   errors={error} />

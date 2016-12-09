@@ -46,7 +46,6 @@ public class StockDetailStorageService {
             Files.copy(file.getInputStream(), yearDir.resolve(filename));
         }
         catch (FileAlreadyExistsException ex){
-        	System.out.println("File Already Exist");
         	throw ex;
         }
         catch (IOException e) {

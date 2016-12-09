@@ -3,20 +3,22 @@ import '../scss/index.scss';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Router, browserHistory} from "react-router";
+import { Router} from "react-router";
+import history from './history';
 
 import routes from "./routes";
 import store from "./store";
 
 (function () {
-  window.serviceHost = "http://localhost:8080/api";
+  const baseUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+  window.serviceHost = baseUrl + "/vmi/api";
 })();
 
 let element = document.getElementById('content');
 ReactDOM.render((
   <div>
     <Provider store={store} >
-        <Router routes={routes} history={browserHistory} />
+        <Router routes={routes} history={history} />
     </Provider>
   </div>
 ), element);

@@ -26,7 +26,8 @@ public class MiscController {
 
 	@RequestMapping(value = {"/"})
 	public String index(){
-		return "index";
+            System.out.println("check");
+            return "index";
 	}
 
 }

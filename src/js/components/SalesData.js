@@ -70,15 +70,15 @@ class SalesData extends Component {
     const { year, week, buyerName } = this.state;
     let errors = [];
     let isError = false;
-    if (year == ''){
+    if (year == '') {
       errors[0] = "Year cannot be blank";
       isError = true;
     }
-    if (week == ''){
+    if (week == '') {
       errors[1] = "Week cannot be blank";
       isError = true;
     }
-    if (this.state.files.length == 0){
+    if (this.state.files.length == 0) {
       errors[2] = "Choose Excel file containing Sales Data";
       isError = true;
     }
