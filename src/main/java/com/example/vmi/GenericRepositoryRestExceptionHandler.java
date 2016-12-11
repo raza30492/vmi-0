@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.example.vmi.dto.RestError;
+import com.example.vmi.storage.StorageFileNotFoundException;
 
 @ControllerAdvice(basePackageClasses = RepositoryRestExceptionHandler.class)
 public class GenericRepositoryRestExceptionHandler {
@@ -21,6 +22,11 @@ public class GenericRepositoryRestExceptionHandler {
 		
 		return response(HttpStatus.CONFLICT, 40901, "Operation cannot be performed. Integrity Constraint violated", e.getRootCause().getMessage(), "");
 	}
+        
+        @ExceptionHandler
+        ResponseEntity<?> handleFileNotFound(StorageFileNotFoundException e){
+            return response(HttpStatus.NOT_FOUND, 40401, "File Not Found", e.getMessage(), "");
+        }
 	
 	private ResponseEntity<RestError> response(HttpStatus status, int code, String msg){
 		return response(status, code, msg, "", "");

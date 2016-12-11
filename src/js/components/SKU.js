@@ -132,7 +132,7 @@ class SKU extends Component {
       body: data
     };
 
-    fetch(window.serviceHost + "/upload/sku", options)
+    fetch(window.serviceHost + "/skus/upload", options)
     .then((response)=>{
       if (response.status == 200 || response.status == 201) {
         this.setState({addingBatch:false});

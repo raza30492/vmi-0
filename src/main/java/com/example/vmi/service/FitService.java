@@ -6,15 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vmi.entity.Fit;
 import com.example.vmi.repository.FitRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional(readOnly = true)
 public class FitService {
-	
-	@Autowired FitRepository fitRepository;
-	
-	public Fit findOne(String name){
-		return fitRepository.findByName(name);
-	}
+    private final Logger logger = LoggerFactory.getLogger(BuyerService.class);
+    
+    @Autowired FitRepository fitRepository;
+
+    public Fit findOne(String name) {
+        return fitRepository.findByName(name);
+    }
 
 }

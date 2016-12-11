@@ -10,81 +10,86 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CsvUtil {
-	public static String fromXlsx(File input){
-        StringBuffer buffer = new StringBuffer();
+    private static final Logger logger = LoggerFactory.getLogger(CsvUtil.class);
+    
+    public static String fromXlsx(File input) {
+        logger.info("fromXlsx()");
+        StringBuilder builder = new StringBuilder();
         String output = null;
         try {
             XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(input));
             XSSFSheet sheet = wb.getSheetAt(0);
-            
-            for( Row row : sheet){
-                for(Cell cell : row){
-                    switch(cell.getCellTypeEnum()){
-                        case STRING: 
-                            buffer.append(cell.getRichStringCellValue().getString());
-                            buffer.append(",");
+
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    switch (cell.getCellTypeEnum()) {
+                        case STRING:
+                            builder.append(cell.getRichStringCellValue().getString());
+                            builder.append(",");
                             break;
                         case NUMERIC:
-                            buffer.append(cell.getNumericCellValue());
-                            buffer.append(",");
+                            builder.append(cell.getNumericCellValue());
+                            builder.append(",");
                             break;
                         case BOOLEAN:
-                            buffer.append(cell.getBooleanCellValue());
-                            buffer.append(",");
+                            builder.append(cell.getBooleanCellValue());
+                            builder.append(",");
                             break;
                         case BLANK:
-                            buffer.append(" ,");
+                            builder.append(" ,");
                             break;
                         default:
                     }
                 }
-                buffer.append("\n");
+                builder.append("\n");
             }
-            output = buffer.toString();
+            output = builder.toString();
 
         } catch (Exception e) {
-            System.err.println("Exception :" + e.getMessage());
+            logger.info("Error converting xlsx to csv", e.getMessage());
         }
         return output;
-	}
-	public static String fromXls(File input){
-		StringBuffer buffer = new StringBuffer();
+    }
+
+    public static String fromXls(File input) {
+        StringBuilder builder = new StringBuilder();
         String output = null;
         try {
             HSSFWorkbook wb = new HSSFWorkbook(new FileInputStream(input));
             HSSFSheet sheet = wb.getSheetAt(0);
-            
-            for( Row row : sheet){
-                for(Cell cell : row){
-                    switch(cell.getCellTypeEnum()){
-                        case STRING: 
-                            buffer.append(cell.getRichStringCellValue().getString());
-                            buffer.append(",");
+
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    switch (cell.getCellTypeEnum()) {
+                        case STRING:
+                            builder.append(cell.getRichStringCellValue().getString());
+                            builder.append(",");
                             break;
                         case NUMERIC:
-                            buffer.append(cell.getNumericCellValue());
-                            buffer.append(",");
+                            builder.append(cell.getNumericCellValue());
+                            builder.append(",");
                             break;
                         case BOOLEAN:
-                            buffer.append(cell.getBooleanCellValue());
-                            buffer.append(",");
+                            builder.append(cell.getBooleanCellValue());
+                            builder.append(",");
                             break;
                         case BLANK:
-                            buffer.append(" ,");
+                            builder.append(" ,");
                             break;
                         default:
                     }
                 }
-                buffer.append("\n");
+                builder.append("\n");
             }
-            output = buffer.toString();
+            output = builder.toString();
 
         } catch (Exception e) {
-            System.err.println("Exception :" + e.getMessage());
+            logger.info("Error converting xls to csv", e.getMessage());
         }
         return output;
-		
-	}
+    }
 }

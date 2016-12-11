@@ -214,7 +214,7 @@ class Proposal extends Component {
         <ListItem key={i} justify="between" pad={{vertical:'none',horizontal:'small'}} >
           <span> {item.filename} </span>
           <span className="secondary">
-            <Button icon={<DocumentDownload />} onClick={this._download.bind(this, 'summary', item.href, item.filename)} />
+            <Button icon={<DocumentDownload />} onClick={this._download.bind(this, item.href, item.filename)} />
             <Button icon={<Trash />} onClick={this._delete.bind(this, 'summary', item.href)} />
           </span>
         </ListItem>

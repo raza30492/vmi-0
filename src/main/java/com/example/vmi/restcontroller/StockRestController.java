@@ -30,85 +30,89 @@ import com.example.vmi.service.BuyerService;
 import com.example.vmi.service.StockDetailService;
 import com.example.vmi.storage.StockDetailStorageService;
 import com.example.vmi.util.MiscUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/stock")
 public class StockRestController {
-
+    private final Logger logger = LoggerFactory.getLogger(StockRestController.class);
+    
     @Autowired private StockDetailStorageService storageService;
-    
+
     @Autowired private StockDetailService stockDetailService;
-    
+
     @Autowired private BuyerService buyerService;
-    
-    
 
     @GetMapping("/{year}")
-    public ResponseEntity<?> listUploadedFiles(@RequestParam("buyer") String buyerName,@PathVariable int year) throws IOException {
-    	
-    	Buyer buyer = buyerService.findOne(buyerName);
-    	List<Map<String, String>> list = storageService.loadAll(buyer.getId(), year)
-    		.map(
-				(path) -> {
-					Map<String,String> hashmap = new HashedMap<>();
-					hashmap.put("filename", path.getFileName().toString());
-	    			String href = MvcUriComponentsBuilder
-	    							.fromMethodName(StockRestController.class, "serveFile", path.getFileName().toString(),buyerName, year)
-	    							.build().toString();
-	    			hashmap.put("href", href);
-	    			return hashmap;
-				}
-    		).collect(Collectors.toList());
+    public ResponseEntity<?> listUploadedFiles(@RequestParam("buyer") String buyerName, @PathVariable int year) throws IOException {
+        logger.info("listUploadedFiles(): /stock/" + year);
+        Buyer buyer = buyerService.findOne(buyerName);
+        List<Map<String, String>> list = storageService.loadAll(buyer.getId(), year)
+                .map(
+                    (path) -> {
+                        Map<String, String> hashmap = new HashedMap<>();
+                        hashmap.put("filename", path.getFileName().toString());
+                        String href = MvcUriComponentsBuilder
+                        .fromMethodName(StockRestController.class, "serveFile", path.getFileName().toString(), buyerName, year)
+                        .build().toString();
+                        hashmap.put("href", href);
+                        return hashmap;
+                    }
+                ).collect(Collectors.toList());
 
-        return new ResponseEntity<List<Map<String,String>>>(list, HttpStatus.OK);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
     @GetMapping("/files/{filename:.+}")
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename,@RequestParam("buyer") String buyerName, @RequestParam("year") int year) {
-    	Buyer buyer = buyerService.findOne(buyerName);
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename, @RequestParam("buyer") String buyerName, @RequestParam("year") int year) {
+        logger.info("serveFile(): /stock/files/" + filename);
+        Buyer buyer = buyerService.findOne(buyerName);
         Resource file = storageService.loadAsResource(buyer.getId(), year, filename);
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+file.getFilename()+"\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file);
     }
-    
+
     @DeleteMapping("/files/{filename:.+}")
     public ResponseEntity<Void> deleteFile(@PathVariable String filename, @RequestParam("buyer") String buyerName, @RequestParam("year") int year) {
-    	Buyer buyer = buyerService.findOne(buyerName);
-        storageService.delete(buyer.getId(), year,filename);
+        logger.info("deleteFile(): /stock/files/" + filename);
+        Buyer buyer = buyerService.findOne(buyerName);
+        storageService.delete(buyer.getId(), year, filename);
         int week = MiscUtil.getWeekFromFilename(filename);
         stockDetailService.delete(year, week);
-        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
-                
-    }
-    
-    @PostMapping("/")
-    public ResponseEntity<?> uploadStock(@RequestParam("buyer") String buyerName, @RequestParam("year") Integer year, @RequestParam("week") Integer week, @RequestParam("file") MultipartFile file ) {
-    	Buyer buyer = buyerService.findOne(buyerName);
-    	String filename = null;
-    	if(file.getOriginalFilename().contains("xlsx")){
-    		filename = "Sales_Week" + week + "_Year" + year + ".xlsx";
-    	}else if(file.getOriginalFilename().contains("xls")){
-    		filename = "Sales_Week" + week + "_Year" + year + ".xls";
-    	}else{
-    		return new ResponseEntity<Error>(new Error("FILE_NOT_SUPPORTED"), HttpStatus.CONFLICT);
-    	}
-    	
-    	try {
-			storageService.store(buyer.getId(), year, file, filename);
-		} catch (FileAlreadyExistsException e) {
-			return new ResponseEntity<Error>(new Error("FILE_ALREADY_EXIST"), HttpStatus.CONFLICT);
-		}
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
-    	Error error = new Error();
-    	stockDetailService.addBatch(year, week, storageService.load(buyer.getId(), year, filename).toFile(), error );
-    	System.out.println(error);
-    	if(error.getCode() != null){
-    		System.out.println("check");
-    		storageService.delete(buyer.getId(), year, filename);
-    		return new ResponseEntity<Error>(error, HttpStatus.CONFLICT);
-    	}
-    	return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<?> uploadStock(@RequestParam("buyer") String buyerName, @RequestParam("year") Integer year, @RequestParam("week") Integer week, @RequestParam("file") MultipartFile file) {
+        logger.info("uploadStock(): /stock/");
+        Buyer buyer = buyerService.findOne(buyerName);
+        String filename = null;
+        if (file.getOriginalFilename().contains("xlsx")) {
+            filename = "Sales_Week" + week + "_Year" + year + ".xlsx";
+        } else if (file.getOriginalFilename().contains("xls")) {
+            filename = "Sales_Week" + week + "_Year" + year + ".xls";
+        } else {
+            return new ResponseEntity<>(new Error("FILE_NOT_SUPPORTED"), HttpStatus.CONFLICT);
+        }
+
+        try {
+            storageService.store(buyer.getId(), year, file, filename);
+        } catch (FileAlreadyExistsException e) {
+            return new ResponseEntity<>(new Error("FILE_ALREADY_EXIST"), HttpStatus.CONFLICT);
+        }
+
+        Error error = new Error();
+        stockDetailService.addBatch(year, week, storageService.load(buyer.getId(), year, filename).toFile(), error);
+        System.out.println(error);
+        if (error.getCode() != null) {
+            System.out.println("check");
+            storageService.delete(buyer.getId(), year, filename);
+            return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

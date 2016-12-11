@@ -112,7 +112,7 @@ class User extends Component {
     const data = { ...user, buyer: buyer, role: 'ROLE_' + role};
     console.log(data);
     const options = {method: 'POST', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(data)};
-    fetch(window.serviceHost + '/emps', options)
+    fetch(window.serviceHost + '/employees', options)
     .then(handleErrors)
     .then((response) => {
       if (response.status == 409) {
@@ -223,8 +223,10 @@ class User extends Component {
     const { users } = this.state;
     const usr = users[index];
     console.log(usr);
-    if ( usr.role == 'MERCHANT') {
-      this.setState({editing: true, userSelected: index, role: usr.role, buyer: usr.buyer.name, showBuyerFilter: true});
+    if ( usr.role == 'MERCHANT' && usr.buyer != null) {
+      this.setState({editing: true, userSelected: index, role: usr.role, buyer: usr.buyer.name , showBuyerFilter: true});
+    } else if (usr.role == 'MERCHANT' && usr.buyer == null) {
+      this.setState({editing: true, userSelected: index, role: usr.role, showBuyerFilter: true});
     } else {
       this.setState({editing: true, userSelected: index, role: usr.role});
     }
@@ -317,7 +319,7 @@ class User extends Component {
             </ListItem>
             {usr.role != 'MERCHANT' ? null:  <ListItem justify="between" pad={{vertical:'small',horizontal:'small'}} >
             <span> Buyer Access </span>
-            <span className="secondary">{usr.buyer.name}</span>
+            <span className="secondary">{(usr.buyer != null ) ? usr.buyer.name : 'No Buyer Access'}</span>
             </ListItem>}
           </List>
         </Box>

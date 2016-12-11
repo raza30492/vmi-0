@@ -12,53 +12,43 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
 
 import com.example.vmi.dto.User;
-import com.example.vmi.entity.Employee;
-import com.example.vmi.entity.Role;
-import com.example.vmi.repository.EmployeeRepository;
 import com.example.vmi.service.EmployeeService;
 import com.example.vmi.storage.ProposalStorageService;
 import com.example.vmi.storage.StockDetailStorageService;
 import com.example.vmi.storage.StorageProperties;
-import com.example.vmi.storage.StorageService;
-
-
 
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
 public class VmiApplication extends SpringBootServletInitializer {
-	
-	
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-		return builder.sources(VmiApplication.class);
-	}
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(VmiApplication.class);
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(VmiApplication.class, args);
-	}
-	
-	@Bean
-	CommandLineRunner init(
-			StockDetailStorageService stockDetailStorageService, 
-			ProposalStorageService proposalStorageService, 
-			EmployeeService employeeService) {
-		
-		return (args) -> {
+    public static void main(String[] args) {
+        SpringApplication.run(VmiApplication.class, args);
+    }
+
+    @Bean
+    CommandLineRunner init(
+            StockDetailStorageService stockDetailStorageService,
+            ProposalStorageService proposalStorageService,
+            EmployeeService employeeService) {
+
+        return (args) -> {
             stockDetailStorageService.init();
             proposalStorageService.init();
-            employeeService.save(new User(55555L,"Md Zahid Raza","zahid7292@gmail.com","8987525008","ROLE_ADMIN"));
-		};
-	}
-	
-	@Bean
-	public Mapper dozerBeanMapper(){
-       List<String> list = new ArrayList<>();
-       list.add("dozer_mapping.xml");
-       return new DozerBeanMapper(list);
-	}
+            employeeService.save(new User(55555L, "Md Zahid Raza", "zahid7292@gmail.com", "8987525008", "ROLE_ADMIN"));
+        };
+    }
+
+    @Bean
+    public Mapper dozerBeanMapper() {
+        List<String> list = new ArrayList<>();
+        list.add("dozer_mapping.xml");
+        return new DozerBeanMapper(list);
+    }
 }

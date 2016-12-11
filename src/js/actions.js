@@ -205,7 +205,7 @@ export function authenticate (credential) {
   return function (dispatch) {
     dispatch({type:AUTH_PROGRESS});
     const options = {method: 'post', headers: headers, body: JSON.stringify(credential)};
-    fetch(window.serviceHost + "/emps/logon", options)
+    fetch(window.serviceHost + "/employees/logon", options)
     .then(handleErrors)
     .then((response)=>{
       if (response.status == 200) {
