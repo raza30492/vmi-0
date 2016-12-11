@@ -272,7 +272,7 @@ class Proposal extends Component {
 
     return (
 		  <div>
-		    <AppHeader />
+		    <AppHeader page="Proposal" />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
           <Box>{notification}</Box>
           <Box direction="row" size="xxlarge" alignSelf="center" pad={{vertical:'small'}}>

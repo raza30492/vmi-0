@@ -358,7 +358,7 @@ class User extends Component {
 
     return (
       <div>
-		    <AppHeader />
+		    <AppHeader page="User" />
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box size="large" alignSelf="center" >
             <Table>

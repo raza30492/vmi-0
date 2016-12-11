@@ -329,7 +329,7 @@ class SKU extends Component {
 
     return (
       <div>
-		    <AppHeader />
+		    <AppHeader page="SKU"/>
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" alignSelf="center">
             <Box pad={{horizontal:'small'}}><Button label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  /></Box>

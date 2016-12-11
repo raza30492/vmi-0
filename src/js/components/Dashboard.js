@@ -26,7 +26,7 @@ class Dashboard extends Component {
 
     return (
 		  <div>
-			    <AppHeader />
+			    <AppHeader page="Home" />
         <div>
           <h1>Welcome to Dashboard!</h1>
         </div>

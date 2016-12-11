@@ -37,7 +37,7 @@ class AppHeader extends Component {
     if (!(token == null || token == 'null')) {
       login = (
         <Menu direction="row" align="center" responsive={false}>
-          <Anchor href="#">{username}</Anchor>
+          <Anchor path="/profile">{username}</Anchor>
           <Anchor path="/logon" onClick={this._logout.bind(this)}>Logout</Anchor>
         </Menu>
       );
@@ -53,11 +53,11 @@ class AppHeader extends Component {
       title = (
         <Title>
           <Button icon={<MenuIcon />} onClick={this._openMenu} />
-          Vendor Managed Inventory
+          Vendor Managed Inventory -> {this.props.page}
         </Title>
       );
     }else{
-      title = (<Title>Vendor Managed Inventory</Title>);
+      title = (<Title>Vendor Managed Inventory -> {this.props.page}</Title>);
     }
 
     return (

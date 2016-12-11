@@ -44,7 +44,7 @@ public class EmployeeRestController {
         Map<String, String> response = new HashMap<>();
         if (employee != null) {
             String basic = credential.getEmail() + ":" + credential.getPassword();
-
+            response.put("id", String.valueOf(employee.getId()));
             response.put("token", new String(Base64.encode(basic.getBytes())));
             response.put("username", employee.getName());
             response.put("role", employee.getRole().getValue());
@@ -56,5 +56,14 @@ public class EmployeeRestController {
         } else {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
+    }
+    
+    @PostMapping(value = "employees/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody User user){
+        Employee employee = employeeService.changePassword(user.getId(), user.getOldPassword(), user.getNewPassword());
+        if(employee != null){
+            return ResponseEntity.ok().build();
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -138,7 +138,7 @@ class Fit extends Component {
 
     return (
       <div>
-			    <AppHeader />
+			    <AppHeader page="Fit" />
 
           <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
             <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium'}} >

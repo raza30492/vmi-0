@@ -287,7 +287,7 @@ class SalesData extends Component {
 
     return (
 		  <div>
-		    <AppHeader />
+		    <AppHeader page="Sales Data" />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" size="medium" alignSelf="center" pad={{vertical:'small'}}>
             <Box><TextInput  value={showYear} onDOMChange={this._onChange.bind(this)} /></Box>

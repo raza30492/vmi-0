@@ -210,6 +210,7 @@ export function authenticate (credential) {
     .then((response)=>{
       if (response.status == 200) {
         response.json().then((data)=>{
+          sessionStorage.id = data.id;
           sessionStorage.token = data.token;
           sessionStorage.username = data.username;
           sessionStorage.role = data.role;

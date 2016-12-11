@@ -134,7 +134,7 @@ class Buyer extends Component {
 
     return (
       <div>
-			    <AppHeader />
+			    <AppHeader page="Buyer" />
 
           <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
             <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium'}} >

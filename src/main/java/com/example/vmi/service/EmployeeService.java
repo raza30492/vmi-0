@@ -12,8 +12,10 @@ import com.example.vmi.repository.BuyerRepository;
 import com.example.vmi.repository.EmployeeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class EmployeeService {
     private final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
     
@@ -36,10 +38,24 @@ public class EmployeeService {
         if (employee != null && encoder.matches(password, employee.getPassword())) {
             return employee;
         }
-        logger.info("employee with email: " + email + " not found.");
+        logger.info("Either Employee with email:" + email + " does not exist or incorrect credential.");
+        return null;
+    }
+    
+    @Transactional
+    public Employee changePassword(Long id, String oldPassword, String newPassword){
+        logger.info("changePassword(), id:" + id);
+        Employee employee = employeeRepository.findOne(id);
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (employee != null && encoder.matches(oldPassword, employee.getPassword())) {
+            employee.setPassword(newPassword);
+            return employee;
+        }
+        logger.info("Either Employee with id:" + id + " does not exist or incorrect credential.");
         return null;
     }
 
+    @Transactional
     public Employee save(User user) {
         logger.info("save(): " + user);
         Employee employee = new Employee(user.getId(), user.getName(), user.getEmail(), user.getMobile(), Role.parse(user.getRole()), user.getMobile());
