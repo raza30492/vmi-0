@@ -8,9 +8,8 @@ import { handleErrors, headers } from '../utils/restUtil';
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
-import Close from "grommet/components/icons/base/Close";
 import Dropzone from 'react-dropzone';
-import Edit from "grommet/components/icons/base/Edit";
+//import Edit from "grommet/components/icons/base/Edit";
 import Footer from 'grommet/components/Footer';
 import Form from 'grommet/components/Form';
 import FormField from 'grommet/components/FormField';
@@ -18,12 +17,12 @@ import FormFields from 'grommet/components/FormFields';
 import Header from 'grommet/components/Header';
 import Heading from 'grommet/components/Heading';
 import Layer from 'grommet/components/Layer';
+import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
 import Section from 'grommet/components/Section';
 import Select from 'grommet/components/Select';
 import Spinning from 'grommet/components/icons/Spinning';
-import Table from 'grommet/components/Table';
-import TableRow from 'grommet/components/TableRow';
+import Trash from "grommet/components/icons/base/Trash";
 
 class SKU extends Component {
   constructor () {
@@ -31,6 +30,7 @@ class SKU extends Component {
     this.state = {
       fitLoaded: false,
       fetching: false,
+      isBusy: false,
       addingSingle: false,
       addingBatch: false,
       editing: false,
@@ -54,8 +54,7 @@ class SKU extends Component {
       this.setState({fitLoaded: true, fitName: this.props.fit.fits[0].name});
       this._getSkus(this.props.fit.fits[0].name);
     }else{
-      alert('Add Fit First!');
-      this.setState({fitLoaded: true});
+      this.setState({fitLoaded: false});
     }
   }
 
@@ -63,9 +62,8 @@ class SKU extends Component {
     if (nextProps.fit.loaded) {
       if (!this.state.fitLoaded && nextProps.fit.fits.length != 0) {
         this._getSkus(nextProps.fit.fits[0].name);
-        this.setState({fitName: nextProps.fit.fits[0].name});
+        this.setState({fitName: nextProps.fit.fits[0].name, fitLoaded: true});
       }
-      this.setState({fitLoaded: true});
     }
   }
 
@@ -118,10 +116,11 @@ class SKU extends Component {
   }
 
   _addBatchSku (e) {
-    if (this.state.files.length == 0) {
-      this.setState({errors: ['','Choose excel file containing SKU']});
+    if (this.state.files.length == 0 || this.state.files.length > 1 ) {
+      this.setState({errors: ['','Choose one excel file containing SKU']});
       return;
     }
+    this.setState({isBusy: true});
     const { fitName } = this.state;
     var data = new FormData();
     data.append('fit', fitName);
@@ -135,14 +134,13 @@ class SKU extends Component {
     fetch(window.serviceHost + "/skus/upload", options)
     .then((response)=>{
       if (response.status == 200 || response.status == 201) {
-        this.setState({addingBatch:false});
+        this.setState({addingBatch:false, isBusy: false});
         this._getSkus(fitName);
       }
-      console.log(response);
     })
     .catch((error)=>{
       console.log(error);
-      this.setState({addingBatch:false});
+      this.setState({addingBatch:false, isBusy: false});
     });
   }
 
@@ -236,27 +234,54 @@ class SKU extends Component {
   }
 
   render () {
+    const { fetching, addingSingle, addingBatch, editing, skus, skuName, files, isBusy, fitName: value, fitLoaded } = this.state;
+    if (!fitLoaded) {
+      return (
+        <Box>
+  		    <AppHeader page="SKU" />
+          <Section>
+            <Box alignSelf="center">
+              <h1>You need to add Fits First.</h1>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
     const { fits } = this.props.fit;
-    const { fetching, addingSingle, addingBatch, editing, skus, skuName, files, fitName: value } = this.state;
     const fitItems = fits.map(fit=> fit.name); //Fit Filter all values
     const fitName = (value == null) ? fitItems[0] : value; //Fit Filter selected value
     const count = fetching ? 100 : skus.length;  // For showing emptyMessage [ListPlaceholder]
-
     const loading = fetching ? (<Spinning />) : null;
+    const busy = isBusy ? (<Spinning />) : null;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
 
-    const skuItems = skus.map((sku, index)=>{
-      return (
-        <TableRow key={index}  >
-          <td style={{padding: 0}}>{fitName}</td>
-          <td style={{padding: 0}}>{sku.name}</td>
-          <td style={{textAlign: 'right', padding: 0}}>
-          <Button icon={<Edit />} onClick={this._onEditClick.bind(this,sku.href, sku.name)} />
-          <Button icon={<Close />} onClick={this._removeSku.bind(this,sku.href)} />
-          </td>
-        </TableRow>
-      );
-    });
+    let skuItems = [];
+    if (skus.length > 0) {
+      for(i = 0; i <= (skus.length/3); i++) {
+        skuItems.push(
+          <Box direction="row" key={i}>
+            <Box size="medium">
+              <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
+                <span> {(3*i) < skus.length ? skus[3*i].name : null} </span>
+                <span className="secondary"> {(3*i) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i].href)} /> : null} </span>
+              </ListItem>
+            </Box>
+            <Box size="medium">
+              <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
+                <span> {(3*i+1) < skus.length ? skus[3*i+1].name : null} </span>
+                <span className="secondary"> {(3*i+1) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+1].href)} /> : null} </span>
+              </ListItem>
+            </Box>
+            <Box size="medium">
+              <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
+                <span> {(3*i+2) < skus.length ? skus[3*i+2].name : null} </span>
+                <span className="secondary"> {(3*i+2) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+2].href)} /> : null} </span>
+              </ListItem>
+            </Box>
+          </Box>
+        );
+      }
+    }
 
     const layerAddSingle = (
       <Layer hidden={!addingSingle} onClose={this._onCloseLayer.bind(this, 'addSingle')}  closer={true} align="center">
@@ -302,7 +327,7 @@ class SKU extends Component {
             </FormField>
           </FormFields>
           <Footer pad={{"vertical": "medium"}} >
-            <Button label="Upload" primary={true}  onClick={this._addBatchSku.bind(this)} />
+            <Button icon={busy} label="Upload" primary={true}  onClick={this._addBatchSku.bind(this)} />
           </Footer>
         </Form>
       </Layer>
@@ -332,27 +357,15 @@ class SKU extends Component {
 		    <AppHeader page="SKU"/>
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" alignSelf="center">
+            <Box><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></Box>
             <Box pad={{horizontal:'small'}}><Button label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  /></Box>
             <Box pad={{horizontal:'small'}}><Button label="Add Batch" onClick={this._onAddClick.bind(this, 'batch')}  /></Box>
           </Box>
-          <Box size="large" alignSelf="center" >
-            <Table>
-              <thead>
-                <tr>
-                  <th style={{width: 200}}><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></th>
-                  <th>SKU</th>
-                  <th style={{textAlign: 'right'}}>ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                {skuItems}
-              </tbody>
-            </Table>
-            <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage={"You do not have any SKU for " + fitName + " filter at the moment."} />
-          </Box>
           <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium'}}>{loading}</Box>
-
-
+          <Box direction="column" alignSelf="center" pad={{vertical: 'large'}}>
+            {skuItems}
+            <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage={'No Skus found for ' + fitName} />
+          </Box>
         </Section>
 
         {layerAddSingle}

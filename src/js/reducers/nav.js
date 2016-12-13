@@ -15,7 +15,8 @@ const initialState = {
     { path: '/fit', label: 'Fit'},
     { path: '/sku', label: 'SKU'},
     { path: '/sales', label: 'Sales Data'},
-    { path: '/proposal', label: 'Proposal'}
+    { path: '/proposal', label: 'Proposal'},
+    { path: '/template', label: 'Template'}
   ]
 };
 

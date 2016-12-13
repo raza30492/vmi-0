@@ -1,7 +1,6 @@
 package com.example.vmi.restcontroller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,10 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.example.vmi.dto.SKUMissing;
 import com.example.vmi.dto.ProposalData;
 import com.example.vmi.dto.Error;
 import com.example.vmi.entity.Fit;
@@ -30,6 +27,8 @@ import com.example.vmi.service.ProposalService;
 import com.example.vmi.storage.ProposalStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/proposals")
@@ -45,7 +44,7 @@ public class ProposalRestController {
     @Autowired
     FitService fitService;
 
-    @PostMapping("/")
+    @PostMapping("/calculate")
     public ResponseEntity<?> calculateProposal(@RequestBody ProposalData data) {
         logger.info("calculateProposal(): /proposals");
         Error error = new Error();

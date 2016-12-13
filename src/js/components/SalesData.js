@@ -17,8 +17,8 @@ import Layer from 'grommet/components/Layer';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
-//import Notification from 'grommet/components/Notification';
 import Section from 'grommet/components/Section';
+import Spinning from 'grommet/components/icons/Spinning';
 import Trash from "grommet/components/icons/base/Trash";
 import TextInput from 'grommet/components/TextInput';
 
@@ -30,6 +30,7 @@ class SalesData extends Component {
 	  super();
     this.state = {
       uploading: false,
+      isBusy: false,
       showYear: '2016',
       buyerName: sessionStorage.buyerName,
       year: '',
@@ -52,7 +53,7 @@ class SalesData extends Component {
   _getSalesData () {
     const { showYear, buyerName } = this.state;
     const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
-    fetch(window.serviceHost + "/stock/" + showYear +"?buyer=" + buyerName, options)
+    fetch(window.serviceHost + "/stocks/" + showYear +"?buyer=" + buyerName, options)
     .then(handleErrors)
     .then((response)=>{
       if (response.status == 200) {
@@ -85,6 +86,8 @@ class SalesData extends Component {
     this.setState({errors: errors});
     if(isError) return;
 
+    //Start Uploading...
+    this.setState({isBusy: true, showYear: year});
     var data = new FormData();
     data.append('buyer', buyerName);
     data.append('year', year);
@@ -96,10 +99,10 @@ class SalesData extends Component {
       body: data
     };
 
-    fetch(window.serviceHost + "/stock/", options)
+    fetch(window.serviceHost + "/stocks/", options)
     .then((response)=>{
       if (response.status == 200 || response.status == 201) {
-        this.setState({uploading:false});
+        this.setState({uploading:false, isBusy: false});
         this._getSalesData();
       }else if (response.status == 409) {
         response.json().then((data)=>{
@@ -115,13 +118,13 @@ class SalesData extends Component {
             errors[2] = 'Only .xls and .xlsx files are supported.';
             this.setState({errors: errors});
           }
-
+          this.setState({isBusy: false});
         });
       }
     })
     .catch((error)=>{
       console.log(error);
-      this.setState({uploading:false});
+      this.setState({uploading:false, isBusy: false});
     });
   }
 
@@ -196,9 +199,10 @@ class SalesData extends Component {
   }
 
   render () {
-    const { files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage } = this.state;
+    const { files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
     const count = sales.length;
+    const busy = isBusy ? <Spinning /> : null;
     let listItems = sales.map((item, i) => {
       return (
         <ListItem key={i} justify="between" pad={{vertical:'none',horizontal:'small'}} >
@@ -263,6 +267,7 @@ class SalesData extends Component {
       <Layer hidden={!uploading} onClose={this._onCloseLayer.bind(this, 'upload')}  closer={true} align="center">
         <Form>
           <Header><Heading tag="h3" strong={true}>Upload Sales Data</Heading></Header>
+
           <h4 style={{color:'red'}}>{errorMessage}</h4>
 
           <FormFields>
@@ -279,7 +284,8 @@ class SalesData extends Component {
             </FormField>
           </FormFields>
           <Footer pad={{"vertical": "medium"}} >
-            <Button label="Upload" primary={true}  onClick={this._upload.bind(this)} />
+            <Button icon={busy} label="Upload" primary={true}  onClick={this._upload.bind(this)} />
+
           </Footer>
         </Form>
       </Layer>
@@ -295,7 +301,7 @@ class SalesData extends Component {
           </Box>
           <Box size="large" alignSelf="center" >
             <List selectable={true} > {listItems} </List>
-            <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage="You do not have any fits at the moment." />
+            <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage={"No Sales Data found for " + showYear} />
           </Box>
 
           <Box size="medium" alignSelf="center" pad={{vertical:'large'}}>

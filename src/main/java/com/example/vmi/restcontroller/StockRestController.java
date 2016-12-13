@@ -2,7 +2,6 @@ package com.example.vmi.restcontroller;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,22 +18,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.example.vmi.dto.Error;
 import com.example.vmi.entity.Buyer;
-import com.example.vmi.entity.SKU;
 import com.example.vmi.service.BuyerService;
 import com.example.vmi.service.StockDetailService;
 import com.example.vmi.storage.StockDetailStorageService;
 import com.example.vmi.util.MiscUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/stock")
+@RequestMapping("/api/stocks")
 public class StockRestController {
     private final Logger logger = LoggerFactory.getLogger(StockRestController.class);
     

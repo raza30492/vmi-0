@@ -2,11 +2,11 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import history from '../history';
 
-//import Header from 'grommet/components/Header';
-//import Title from 'grommet/components/Title';
+
 
 import AppHeader from './AppHeader';
-
+import Box from 'grommet/components/Box';
+import Section from 'grommet/components/Section';
 
 class Dashboard extends Component {
   constructor () {
@@ -25,13 +25,15 @@ class Dashboard extends Component {
   render () {
 
     return (
-		  <div>
-			    <AppHeader page="Home" />
-        <div>
-          <h1>Welcome to Dashboard!</h1>
-        </div>
+		  <Box>
+		    <AppHeader page="Home" />
+        <Section>
+          <Box alignSelf="center">
+            <h1>Welcome to Vendor Managed Inventory Application!</h1>
+          </Box>
+        </Section>
 
-			</div>
+			</Box>
     );
   }
 }

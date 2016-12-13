@@ -130,7 +130,7 @@ public class StockDetailStorageService {
             }
             if (!Files.exists(salesLocation, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
                 Files.createDirectory(salesLocation);
-                logger.info("Created " + rootLocation.toString() + " directory");
+                logger.info("Created " + salesLocation.toString() + " directory");
             }
         } catch (IOException e) {
             logger.info("Could not initialize storage", e);

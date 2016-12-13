@@ -105,9 +105,15 @@ public class ProposalService {
         writeToSheetMain(proposalList, sheetMain, data.getYear(), data.getWeek());
 
         XSSFWorkbook workbookSummary = new XSSFWorkbook();
-        XSSFSheet sheetSummary = workbookSummary.createSheet(data.getFitName());
+        XSSFSheet sheetSummary = workbookSummary.createSheet(data.getFitName());        
         writeToSheetSummary(proposalList, sheetSummary, data.getYear(), data.getWeek());
 
+        for(int i = 0; i < 18; i++){
+            sheetMain.autoSizeColumn(i);
+        }
+        for(int i = 0; i < 4; i++){
+            sheetSummary.autoSizeColumn(i);
+        }
         //////////Creating Directory Structure and then writing to Excel file ////////////
         Fit fit = fitRepository.findByName(data.getFitName());
         Path buyerDir = Paths.get("data", "proposals", String.valueOf("buyer" + fit.getBuyer().getId()));
@@ -242,10 +248,10 @@ public class ProposalService {
         cell.setCellValue("FIT");
 
         cell = row.createCell(3);
-        cell.setCellValue("CUM SALE(" + year + ")");
+        cell.setCellValue("CUM SALE(" + (year-1) + ")");
 
         cell = row.createCell(4);
-        cell.setCellValue("CUM SALE WK" + week);
+        cell.setCellValue("CUM SALE("+ year +") WK" + week);
 
         cell = row.createCell(5);
         cell.setCellValue("TOTAL CUM SALE");

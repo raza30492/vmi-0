@@ -18,6 +18,7 @@ import com.example.vmi.service.EmployeeService;
 import com.example.vmi.storage.ProposalStorageService;
 import com.example.vmi.storage.StockDetailStorageService;
 import com.example.vmi.storage.StorageProperties;
+import com.example.vmi.storage.TemplateStorageService;
 
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
@@ -36,15 +37,17 @@ public class VmiApplication extends SpringBootServletInitializer {
     CommandLineRunner init(
             StockDetailStorageService stockDetailStorageService,
             ProposalStorageService proposalStorageService,
+            TemplateStorageService templateStorageService,
             EmployeeService employeeService) {
 
         return (args) -> {
             stockDetailStorageService.init();
             proposalStorageService.init();
+            templateStorageService.init();
             employeeService.save(new User(55555L, "Md Zahid Raza", "zahid7292@gmail.com", "8987525008", "ROLE_ADMIN"));
         };
     }
-
+    
     @Bean
     public Mapper dozerBeanMapper() {
         List<String> list = new ArrayList<>();

@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-
 import { getFits } from '../actions';
 import { handleErrors, headers } from '../utils/restUtil';
-
+//Components
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
@@ -21,17 +20,16 @@ import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
 import Notification from 'grommet/components/Notification';
 import Section from 'grommet/components/Section';
 import Select from 'grommet/components/Select';
-// import Spinning from 'grommet/components/icons/Spinning';
+import Spinning from 'grommet/components/icons/Spinning';
 import Tab from 'grommet/components/Tab';
 import Tabs from 'grommet/components/Tabs';
-import Trash from "grommet/components/icons/base/Trash";
-
 
 class Proposal extends Component {
   constructor () {
 	  super();
     this.state = {
       isClose: true,  // Whether Notification is closed
+      isBusy: false,
       status: '', //Notification status [ok, critical, warning]
       message: '',  //Notification message
       fetching: false,  //fetching proposals
@@ -43,7 +41,8 @@ class Proposal extends Component {
       year: '2016',
       data: {}, //request data for Calculate rest call
       skuFlag: false, // Show missing Sku Layer
-      missingSkus: []
+      missingSkus: [],
+      errors: []
     };
   }
 
@@ -103,14 +102,37 @@ class Proposal extends Component {
 
   _calculateProposal () {
     const { data, fitName } = this.state;
-    console.log(data);
+    let errors = [];
+    let isError = false;
+    if (data.year == '' || data.year == undefined) {
+      errors[0] = "Year cannot be blank";
+      isError = true;
+    }
+    if (data.week == '' || data.week == undefined) {
+      errors[1] = "Week cannot be blank";
+      isError = true;
+    }
+    if (data.salesForcast == '' || data.salesForcast == undefined) {
+      errors[2] = "Sales Forcast cannot be blank";
+      isError = true;
+    }
+    if (data.cumSalesForcast == '' || data.cumSalesForcast == undefined) {
+      errors[3] = "Cummulative Sales Forcast cannot be blank";
+      isError = true;
+    }
+
+    this.setState({errors: errors});
+    if(isError) return;
+
+    //Calculate proposals
+    this.setState({isBusy: true});
     const options = {method: 'post', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(data)};
-    fetch(window.serviceHost + '/proposals/', options)
+    fetch(window.serviceHost + '/proposals/calculate', options)
     .then(handleErrors)
     .then((response)=>{
       if ( response.status == 201 || response.status == 200) {
         this._getProposals(fitName);
-        this.setState({calculating: false});
+        this.setState({calculating: false, isBusy: false});
       }else if (response.status == 409) {
         response.json().then((resp)=>{
           if (resp.code == "CURRENT_YEAR_DATA_NOT_FOUND") {
@@ -120,12 +142,13 @@ class Proposal extends Component {
           } else if (resp.code == "HISTORY_SKUS_MISSING") {
             this.setState({calculating: false, skuFlag: true, missingSkus: resp.skusMissing});
           }
+          this.setState({isBusy: false});
         });
       }
     })
     .catch((error)=>{
       console.log(error);
-      this.setState({calculating: false});
+      this.setState({calculating: false, isBusy: false});
     });
   }
 
@@ -169,19 +192,23 @@ class Proposal extends Component {
 
   _onChangeInput ( event ) {
     var data = this.state.data;
-    if (event.target.getAttribute('name') == 'fitName')
+    if (event.target.getAttribute('name') == 'fitName') {
       data[event.target.getAttribute('name')] = event.value;
-    else
+      this.setState({fitName: event.value});
+    } else
       data[event.target.getAttribute('name')] = event.target.value;
     this.setState({data: data});
   }
 
   _onCalculateClick () {
-    this.setState({calculating: true});
+    let { data, fitName } = this.state;
+    data.fitName = fitName;
+    this.setState({calculating: true, data: data});
   }
 
   _onCloseLayer (layer) {
     this.setState({calculating: false});
+    this._getProposals(this.state.fitName);
   }
 
   _onClose () {
@@ -190,10 +217,10 @@ class Proposal extends Component {
 
   render () {
     const { fits } = this.props.fit;
-    const { fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus } = this.state;
+    const { fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
 
     const notification = isClose ? null : (<Notification full={false} closer={true} message={message} status={status} size="medium" onClose={this._onClose.bind(this)} /> );
-
+    const busy = isBusy ? <Spinning /> : null;
     const fitItems = fits.map(fit=> fit.name); //Fit Filter all values
     const mainCount = mainProposals.length;
     const summaryCount = summaryProposals.length;
@@ -203,7 +230,6 @@ class Proposal extends Component {
           <span> {item.filename} </span>
           <span className="secondary">
             <Button icon={<DocumentDownload />} onClick={this._download.bind(this, item.href, item.filename)} />
-            <Button icon={<Trash />} onClick={this._delete.bind(this, item.href)} />
           </span>
         </ListItem>
       );
@@ -215,7 +241,6 @@ class Proposal extends Component {
           <span> {item.filename} </span>
           <span className="secondary">
             <Button icon={<DocumentDownload />} onClick={this._download.bind(this, item.href, item.filename)} />
-            <Button icon={<Trash />} onClick={this._delete.bind(this, 'summary', item.href)} />
           </span>
         </ListItem>
       );
@@ -247,24 +272,24 @@ class Proposal extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Calculate VMI Proposal</Heading></Header>
           <FormFields>
-            <FormField>
+            <FormField >
               <Select options={fitItems} name="fitName" value={data.fitName} onChange={this._onChangeInput.bind(this)}/>
             </FormField>
-            <FormField label="Year" >
+            <FormField label="Year" error={errors[0]}>
               <input type="text" name="year" value={data.year} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week" >
+            <FormField label="Week" error={errors[1]}>
               <input type="text" name="week" value={data.week} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Sale Forcast for proposed Week" >
+            <FormField label="Sale Forcast for proposed Week" error={errors[2]}>
               <input type="text" name="salesForcast" value={data.salesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Cummulative Forcast upto proposed Week" >
+            <FormField label="Cummulative Forcast upto proposed Week" error={errors[3]}>
               <input type="text" name="cumSalesForcast" value={data.cumSalesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
           </FormFields>
           <Footer pad={{"vertical": "medium"}} >
-            <Button label="Calculate Proposal" primary={true}  onClick={this._calculateProposal.bind(this)} />
+            <Button icon={busy} label="Calculate Proposal" primary={true}  onClick={this._calculateProposal.bind(this)} />
           </Footer>
         </Form>
       </Layer>
@@ -285,13 +310,13 @@ class Proposal extends Component {
               <Tab title="Proposal">
                 <Box>
                   <List selectable={true} > {mainItems} </List>
-                  <ListPlaceholder unfilteredTotal={mainCount} filteredTotal={mainCount} emptyMessage="You do not have any fits at the moment." />
+                  <ListPlaceholder unfilteredTotal={mainCount} filteredTotal={mainCount} emptyMessage={"No history proposals found for " + fitName + " in " + year} />
                 </Box>
               </Tab>
               <Tab title="Proposal Summary">
                 <Box>
                   <List selectable={true} > {summaryItems} </List>
-                  <ListPlaceholder unfilteredTotal={summaryCount} filteredTotal={summaryCount} emptyMessage="You do not have any fits at the moment." />
+                  <ListPlaceholder unfilteredTotal={summaryCount} filteredTotal={summaryCount} emptyMessage={"No history proposals found for " + fitName + " in " + year} />
                 </Box>
               </Tab>
             </Tabs>

@@ -7,6 +7,7 @@ import Profile from './components/Profile';
 import Proposal from './components/Proposal';
 import SalesData from './components/SalesData';
 import SKU from './components/SKU';
+import Template from './components/Template';
 import User from './components/User';
 
 export default {
@@ -21,6 +22,7 @@ export default {
     { path: 'sales', component: SalesData},
     { path: 'proposal', component: Proposal},
     { path: 'profile', component: Profile},
-    { path: 'sku', component: SKU}
+    { path: 'sku', component: SKU},
+    { path: 'template', component: Template}
   ]
 };

@@ -42,7 +42,7 @@ public class ProposalStorageService {
             }
             if (!Files.exists(proposalLocation, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
                 Files.createDirectory(proposalLocation);
-                logger.info("Created " + rootLocation.toString() + " directory.");
+                logger.info("Created " + proposalLocation.toString() + " directory.");
             }
         } catch (IOException e) {
             logger.error("Error initializing proposal directory.");
