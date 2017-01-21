@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.example.vmi.restcontroller;
 
 import com.example.vmi.service.BuyerService;
@@ -14,10 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-/**
- *
- * @author razamd
- */
 @RepositoryRestController
 public class BuyerRestController {
     private final Logger logger = LoggerFactory.getLogger(BuyerRestController.class);
@@ -27,7 +18,11 @@ public class BuyerRestController {
     @DeleteMapping(value = "/buyers/{id}")
     public ResponseEntity<?> deleteBuyer(@PathVariable("id") Integer id){
         logger.info("deleteBuyer(): /buyers/" + id);
-        buyerService.delete(id);
-        return ResponseEntity.noContent().build();
+        if(buyerService.findOne(id) != null){
+            buyerService.delete(id);
+            return ResponseEntity.noContent().build();
+        }else{
+            return ResponseEntity.notFound().build();
+        }
     }
 }

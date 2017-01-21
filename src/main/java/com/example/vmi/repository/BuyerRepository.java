@@ -7,7 +7,7 @@ import com.example.vmi.entity.Buyer;
 
 @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_MERCHANT')")
 public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
-	
-	public Buyer findByName(String name);
-	
+
+    public Buyer findByName(String name);
+
 }

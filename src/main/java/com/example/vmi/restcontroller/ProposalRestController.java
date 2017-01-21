@@ -46,7 +46,7 @@ public class ProposalRestController {
 
     @PostMapping("/calculate")
     public ResponseEntity<?> calculateProposal(@RequestBody ProposalData data) {
-        logger.info("calculateProposal(): /proposals");
+        logger.info("calculateProposal(): /proposals/calculate");
         Error error = new Error();
         proposalService.calculateProposal(data, error);
         if (error.getCode() != null) {

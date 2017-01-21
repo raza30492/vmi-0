@@ -21,6 +21,8 @@ import com.example.vmi.util.CsvUtil;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import java.util.HashSet;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,7 @@ public class StockDetailService {
     @Autowired StockDetailsRepository stockDetailsRepository;
 
     public void addBatch(Integer year, Integer week, File file, Error error) {
+        logger.info("addBatch()");
         //Convert to csv String
         String output = null;
         if (file.getName().contains("xlsx")) {
@@ -56,7 +59,7 @@ public class StockDetailService {
 
         //Check if Each Fit exists
         Fit fit = null;
-        List<String> fitsMissing = new ArrayList<>();
+        Set<String> fitsMissing = new HashSet<>();
         for (Stock stk : list) {
             if (stk.getSkuName() == null && stk.getFit() == null) {
                 continue;
@@ -92,7 +95,7 @@ public class StockDetailService {
             error.setSkusMissing(skusMissing);
             return;
         }
-
+        
         //Convert from DTO to Entity
         List<StockDetails> stocks = new ArrayList<>();
         for (Stock stk : list) {
@@ -107,6 +110,7 @@ public class StockDetailService {
 
             stocks.add(stock);
         }
+        logger.info("Saving "+ stocks.size() + " Stock details in database");
         stockDetailsRepository.save(stocks);
     }
 

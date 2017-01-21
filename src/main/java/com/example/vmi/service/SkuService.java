@@ -8,12 +8,15 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.vmi.entity.Fit;
 import com.example.vmi.entity.SKU;
+import com.example.vmi.exception.InconsistentEditException;
 import com.example.vmi.repository.FitRepository;
 import com.example.vmi.repository.SKURepository;
+import com.example.vmi.repository.StockDetailsRepository;
 import com.example.vmi.util.CsvUtil;
 import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBean;
@@ -22,13 +25,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@Transactional(readOnly = true)
 public class SkuService {
     private final Logger logger = LoggerFactory.getLogger(BuyerService.class);
     
     @Autowired FitRepository fitRepository;
     
     @Autowired SKURepository skuRepository;
+    
+    @Autowired StockDetailsRepository stockRepository;
+    public SKU findOne(Long id){
+    	return skuRepository.findOne(id);
+    }
+    
+    @Transactional
+    public SKU updateSku(SKU sku){
+    	if(stockRepository.countBySku(sku) > 0){
+    		throw new InconsistentEditException("Updation restricted to prevent data inconsistency");
+    	}
+    	SKU sku2 = skuRepository.findOne(sku.getId());
+    	sku2.setName(sku.getName());
+    	return sku2;
+    }
 
+    @Transactional
     public void addBatch(String fitName, MultipartFile file) {
         logger.info("addBatch()");
         try {

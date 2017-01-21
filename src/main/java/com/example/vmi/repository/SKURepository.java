@@ -1,5 +1,6 @@
 package com.example.vmi.repository;
 
+import com.example.vmi.entity.Fit;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,10 +11,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.vmi.entity.SKU;
 
 @RepositoryRestResource(collectionResourceRel = "skus", itemResourceRel = "sku", path = "skus")
-@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_MERCHANT')")
+@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER') or hasRole('ROLE_MERCHANT')")
 public interface SKURepository extends JpaRepository<SKU, Long> {
-	
-	List<SKU> findByFitName(@Param("fitName") String fitName);
-	
-	SKU findByNameAndFitName(String skuName, String fitName);
+
+    List<SKU> findByFitName(@Param("fitName") String fitName);
+
+    List<SKU> findByFit(Fit fit);
+
+    SKU findByNameAndFitName(String skuName, String fitName);
+    
+    Long countByFit(Fit fit);
 }

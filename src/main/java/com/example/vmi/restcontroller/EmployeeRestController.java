@@ -41,13 +41,13 @@ public class EmployeeRestController {
     public ResponseEntity<?> logon(@RequestBody Credential credential, HttpServletRequest req) {
         logger.info("logon(): /employees/logon");
         Employee employee = employeeService.authenticate(credential.getEmail(), credential.getPassword());
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         if (employee != null) {
             String basic = credential.getEmail() + ":" + credential.getPassword();
             response.put("id", String.valueOf(employee.getId()));
             response.put("token", new String(Base64.encode(basic.getBytes())));
             response.put("username", employee.getName());
-            response.put("role", employee.getRole().getValue());
+            response.put("role", employee.getRole());
             if (employee.getBuyer() != null) {
                 response.put("buyerName", employee.getBuyer().getName());
                 response.put("buyerHref", req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + "/api/buyers/" + employee.getBuyer().getId());

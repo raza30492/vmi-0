@@ -87,7 +87,7 @@ public class StockRestController {
 
     @PostMapping("/")
     public ResponseEntity<?> uploadStock(@RequestParam("buyer") String buyerName, @RequestParam("year") Integer year, @RequestParam("week") Integer week, @RequestParam("file") MultipartFile file) {
-        logger.info("uploadStock(): /stock/");
+        logger.info("uploadStock(): /stocks/");
         Buyer buyer = buyerService.findOne(buyerName);
         String filename = null;
         if (file.getOriginalFilename().contains("xlsx")) {
@@ -106,7 +106,6 @@ public class StockRestController {
 
         Error error = new Error();
         stockDetailService.addBatch(year, week, storageService.load(buyer.getId(), year, filename).toFile(), error);
-        System.out.println(error);
         if (error.getCode() != null) {
             System.out.println("check");
             storageService.delete(buyer.getId(), year, filename);
