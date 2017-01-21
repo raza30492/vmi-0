@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { getFits } from '../actions';
 import { handleErrors, headers } from '../utils/restUtil';
+import { localeData } from '../reducers/localization';
 //Components
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
@@ -34,7 +35,6 @@ class Proposal extends Component {
       message: '',  //Notification message
       fetching: false,  //fetching proposals
       calculating: false,
-      fitLoaded: false,
       fitName: '',
       mainProposals: [],
       summaryProposals: [],
@@ -47,24 +47,28 @@ class Proposal extends Component {
   }
 
   componentWillMount () {
+    this.setState({localeData: localeData()});
     if (!this.props.fit.loaded) {
-      this.props.dispatch(getFits());
+      console.log('check1');
+      this.props.dispatch(getFits(sessionStorage.buyerName));
     }else if (this.props.fit.fits.length != 0) {
-      this.setState({fitLoaded: true, fitName: this.props.fit.fits[0].name});
+      console.log('check2');
+      this.setState({fitName: this.props.fit.fits[0].name});
       this._getProposals(this.props.fit.fits[0].name);
     }else{
-      alert('Add Fit First!');
-      this.setState({fitLoaded: true});
+      console.log('check3');
+      alert('Add Fits, SKUs and upload sales data first!');
+      this.context.router.push('/fit');
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    if (nextProps.fit.loaded) {
-      if (!this.state.fitLoaded && nextProps.fit.fits.length != 0) {
-        this._getProposals(nextProps.fit.fits[0].name);
-        this.setState({fitName: nextProps.fit.fits[0].name});
-      }
-      this.setState({fitLoaded: true});
+    if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
+      alert("Add Fits, SKUs and upload sales data first!");
+      this.context.router.push('/fit');
+    }else if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length != 0) {
+      this.setState({fitName: nextProps.fit.fits[0].name});
+      this._getProposals(nextProps.fit.fits[0].name);
     }
   }
 
@@ -72,12 +76,10 @@ class Proposal extends Component {
     const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     //fetch main Proposals
     let url = window.serviceHost + '/proposals/main/' + this.state.year + '?fitName=' + fitName;
-    console.log(url);
     fetch(url, options)
     .then(handleErrors)
     .then(response => response.json())
     .then(data => {
-      console.log(data);
       this.setState({mainProposals: data});
     })
     .catch(error => {
@@ -86,12 +88,10 @@ class Proposal extends Component {
     });
     //Fetch Summary Proposals
     url = window.serviceHost + '/proposals/summary/' + this.state.year + '?fitName=' + fitName;
-    console.log(url);
     fetch(url, options)
     .then(handleErrors)
     .then(response => response.json())
     .then(data => {
-      console.log(data);
       this.setState({summaryProposals: data});
     })
     .catch(error => {
@@ -108,8 +108,8 @@ class Proposal extends Component {
       errors[0] = "Year cannot be blank";
       isError = true;
     }
-    if (data.week == '' || data.week == undefined) {
-      errors[1] = "Week cannot be blank";
+    if (data.week1 == '' || data.week1 == undefined) {
+      errors[1] = "Week1 value cannot be blank";
       isError = true;
     }
     if (data.salesForcast == '' || data.salesForcast == undefined) {
@@ -135,8 +135,14 @@ class Proposal extends Component {
         this.setState({calculating: false, isBusy: false});
       }else if (response.status == 409) {
         response.json().then((resp)=>{
-          if (resp.code == "CURRENT_YEAR_DATA_NOT_FOUND") {
-            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Sales Data is not uploaded.'});
+          if (resp.code == "CURRENT_YEAR_WEEK1_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Week1 Sales Data is not uploaded.'});
+          } else if (resp.code == "CURRENT_YEAR_WEEK2_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Week2 Sales Data is not uploaded.'});
+          } else if (resp.code == "CURRENT_YEAR_WEEK3_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Week3 Sales Data is not uploaded.'});
+          } else if (resp.code == "CURRENT_YEAR_WEEK4_DATA_NOT_FOUND") {
+            this.setState({calculating: false, isClose: false, status: 'critical', message: 'Current year Week4 Sales Data is not uploaded.'});
           } else if (resp.code == "PREVIOUS_YEAR_DATA_NOT_FOUND") {
             this.setState({calculating: false, isClose: false, status: 'critical', message: 'Previous year Sales Data is not uploaded.'});
           } else if (resp.code == "HISTORY_SKUS_MISSING") {
@@ -174,7 +180,10 @@ class Proposal extends Component {
   }
 
   _delete (url) {
-
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
   }
 
 
@@ -201,6 +210,10 @@ class Proposal extends Component {
   }
 
   _onCalculateClick () {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
     let { data, fitName } = this.state;
     data.fitName = fitName;
     this.setState({calculating: true, data: data});
@@ -217,7 +230,7 @@ class Proposal extends Component {
 
   render () {
     const { fits } = this.props.fit;
-    const { fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
+    const { localeData, fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
 
     const notification = isClose ? null : (<Notification full={false} closer={true} message={message} status={status} size="medium" onClose={this._onClose.bind(this)} /> );
     const busy = isBusy ? <Spinning /> : null;
@@ -275,11 +288,20 @@ class Proposal extends Component {
             <FormField >
               <Select options={fitItems} name="fitName" value={data.fitName} onChange={this._onChangeInput.bind(this)}/>
             </FormField>
-            <FormField label="Year" error={errors[0]}>
+            <FormField label="Year*" error={errors[0]}>
               <input type="text" name="year" value={data.year} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week" error={errors[1]}>
-              <input type="text" name="week" value={data.week} onChange={this._onChangeInput.bind(this)} />
+            <FormField label="Week1*" error={errors[1]}>
+              <input type="text" name="week1" value={data.week1} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Week2" >
+              <input type="text" name="week2" value={data.week2} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Week3">
+              <input type="text" name="week3" value={data.week3} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Week4" >
+              <input type="text" name="week4" value={data.week4} onChange={this._onChangeInput.bind(this)} />
             </FormField>
             <FormField label="Sale Forcast for proposed Week" error={errors[2]}>
               <input type="text" name="salesForcast" value={data.salesForcast} onChange={this._onChangeInput.bind(this)} />
@@ -297,7 +319,7 @@ class Proposal extends Component {
 
     return (
 		  <div>
-		    <AppHeader page="Proposal" />
+		    <AppHeader page={localeData.label_proposal} />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
           <Box>{notification}</Box>
           <Box direction="row" size="xxlarge" alignSelf="center" pad={{vertical:'small'}}>
@@ -331,6 +353,10 @@ class Proposal extends Component {
     );
   }
 }
+
+Proposal.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 let select = (store) => {
   return { fit: store.fit, user: store.user};

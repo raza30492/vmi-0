@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-
+import { localeData } from '../reducers/localization';
 import { handleErrors, headers } from '../utils/restUtil';
 import { authenticate } from '../actions';
 
@@ -32,6 +32,7 @@ class Profile extends Component {
   }
 
   componentWillMount () {
+    this.setState({localeData: localeData()});
     this._getUserDetails();
   }
 
@@ -39,7 +40,7 @@ class Profile extends Component {
     const id = sessionStorage.id;
     this.setState({fetching: true});
     const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
-    fetch(window.serviceHost + '/employees/' + id + "?projection=inlineBuyer", options)
+    fetch(window.serviceHost + '/employees/' + id + '?projection=inlineBuyer', options)
     .then(handleErrors)
     .then(response => response.json())
     .then(data => {
@@ -53,8 +54,25 @@ class Profile extends Component {
 
   _changePassword () {
     const { credential, user } = this.state;
-    //const { dispatch } = this.props;
-    console.log(credential);
+
+    let errors = [];
+    if (credential.oldPassword == undefined || credential.oldPassword == '') {
+      errors[0] = 'Old Password cannot be blank.';
+    }
+    if (credential.newPassword == undefined || credential.newPassword == '') {
+      errors[1] = 'New Password cannot be blank.';
+    }
+    if (credential.confirmNewPassword == undefined || credential.confirmNewPassword == '') {
+      errors[2] = 'Confirm New Password cannot be blank.';
+    }
+    if (credential.newPassword != credential.confirmNewPassword) {
+      errors[2] = 'Passwords do not match.';
+    }
+    this.setState({errors: errors});
+    if (errors.length != 0) {
+      return;
+    }
+
     const data = {id: sessionStorage.id, oldPassword: credential.oldPassword, newPassword: credential.newPassword};
     const options = {method: 'POST', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(data)};
     fetch(window.serviceHost + '/employees/changePassword', options)
@@ -97,7 +115,7 @@ class Profile extends Component {
   }
 
   render () {
-    const { fetching, changingPassword, user, errors, credential, errorMessage } = this.state;
+    const { fetching, changingPassword, user, errors, credential, errorMessage, localeData } = this.state;
     const loading = fetching ? (<Spinning />) : null;
 
     const layerChangePassword = (
@@ -155,7 +173,7 @@ class Profile extends Component {
 
     return (
 		  <Box>
-		    <AppHeader page="Profile" />
+		    <AppHeader page={localeData.label_profile} />
         <Section size="xlarge"  pad={{vertical: 'none', horizontal:'small'}} alignSelf="center">
 
           <Box size="large">

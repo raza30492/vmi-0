@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { connect } from 'react-redux';
-
+import { localeData } from '../reducers/localization';
 import { getBuyers, addBuyer, editBuyer, removeBuyer, TOGGLE_BUYER_ADD_FORM, TOGGLE_BUYER_EDIT_FORM } from '../actions';
 //Components
 import Add from "grommet/components/icons/base/Add";
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
-import Close from "grommet/components/icons/base/Close";
+
 import Edit from "grommet/components/icons/base/Edit";
 import Footer from 'grommet/components/Footer';
 import Form from 'grommet/components/Form';
@@ -21,6 +21,7 @@ import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
 import Section from 'grommet/components/Section';
 import Spinning from 'grommet/components/icons/Spinning';
+import Trash from "grommet/components/icons/base/Trash";
 
 class Buyer extends Component {
 
@@ -31,6 +32,10 @@ class Buyer extends Component {
       href: null,
       errors:[]
     };
+  }
+
+  componentWillMount () {
+    this.setState({localeData: localeData()});
   }
 
   componentDidMount () {
@@ -59,8 +64,11 @@ class Buyer extends Component {
     this.setState({href: null, buyerName: ''});
   }
 
-  _removeBuyer (href) {
-    this.props.dispatch(removeBuyer(href));
+  _removeBuyer (buyer, href) {
+    var value = confirm("Deleting a buyer is destructive process. It will delete all Fits, Skus and Stock Details related to this buyer. Are you sure you want to delete buyer: " + buyer);
+    if (value) {
+      this.props.dispatch(removeBuyer(href));
+    }
   }
 
   _onAddClick () {
@@ -85,6 +93,7 @@ class Buyer extends Component {
   }
 
   render () {
+    const { localeData } = this.state;
     let { buyers, fetching, adding, editing } = this.props.buyer;
     let count = fetching ? 100 : buyers.length;
     const loading = fetching ? (<Spinning />) : null;
@@ -94,7 +103,7 @@ class Buyer extends Component {
           <span> {buyer.name} </span>
           <span className="secondary">
             <Button icon={<Edit />} onClick={this._onEditClick.bind(this, buyer.name, buyer.href)}/>
-            <Button icon={<Close />} onClick={this._removeBuyer.bind(this, buyer.href)} />
+            <Button icon={<Trash />} onClick={this._removeBuyer.bind(this, buyer.name, buyer.href)} />
           </span>
         </ListItem>
       );
@@ -134,14 +143,14 @@ class Buyer extends Component {
 
     return (
       <div>
-			    <AppHeader page="Buyer" />
+			    <AppHeader page={localeData.label_buyer} />
 
           <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
             <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium'}} >
               {loading}
             </Box>
             <Box size="large" alignSelf="center" >
-              <List selectable={true} > {items} </List>
+              <List > {items} </List>
               <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage="You do not have any buyers at the moment." />
             </Box>
             <Box size="small" alignSelf="center" pad={{vertical:'large'}}>

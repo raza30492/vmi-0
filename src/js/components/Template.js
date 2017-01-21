@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { handleErrors, headers } from '../utils/restUtil';
+import { localeData } from '../reducers/localization';
 
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
@@ -15,6 +16,10 @@ export default class Template extends Component {
     this.state = {
       templates: []
     };
+  }
+
+  componentWillMount () {
+    this.setState({localeData: localeData()});
   }
 
   componentDidMount () {
@@ -60,7 +65,7 @@ export default class Template extends Component {
   }
 
   render () {
-    const { templates } = this.state;
+    const { templates, localeData } = this.state;
     const links = templates.map((item, i)=>{
       return (
         <ListItem key={i} justify="between" pad={{vertical:'none',horizontal:'small'}} >
@@ -73,7 +78,7 @@ export default class Template extends Component {
     });
     return (
 		  <Box>
-		    <AppHeader page="Template" />
+		    <AppHeader page={localeData.label_template} />
         <Section>
           <Box size="large" alignSelf="center">
             Any data is uploaded using excel file containing data. Therefore it is necessanry to define fixed excel template

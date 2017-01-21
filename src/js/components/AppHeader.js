@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { localeData } from '../reducers/localization';
 
 import Title from 'grommet/components/Title';
 import Header from 'grommet/components/Header';
@@ -17,6 +18,10 @@ class AppHeader extends Component {
     this._openMenu = this._openMenu.bind(this);
   }
 
+  componentWillMount () {
+    this.setState({localeData: localeData()});
+  }
+
   _openMenu () {
     this.props.dispatch(navActivate(true));
   }
@@ -32,11 +37,18 @@ class AppHeader extends Component {
 
   render () {
     const { active: navActive } = this.props.nav;
-    const { username, token } = window.sessionStorage;
+    const { username, token, role } = window.sessionStorage;
+    let rol;
+    if (token != null) {
+      rol = role.charAt(0) + role.substring(1,role.length).toLowerCase();
+    }
+
     let login = null;
     if (!(token == null || token == 'null')) {
       login = (
+
         <Menu direction="row" align="center" responsive={false}>
+          <Anchor href="#">{rol}</Anchor>
           <Anchor path="/profile">{username}</Anchor>
           <Anchor path="/logon" onClick={this._logout.bind(this)}>Logout</Anchor>
         </Menu>
@@ -44,7 +56,7 @@ class AppHeader extends Component {
     } else {
       login = (
         <Menu direction="row" align="center" responsive={false}>
-          <Anchor href="#">Login</Anchor>
+          <Anchor path="/logon">Login</Anchor>
         </Menu>
       );
     }
@@ -53,11 +65,11 @@ class AppHeader extends Component {
       title = (
         <Title>
           <Button icon={<MenuIcon />} onClick={this._openMenu} />
-          Vendor Managed Inventory -> {this.props.page}
+          {this.state.localeData.APP_NAME} -> {this.props.page}
         </Title>
       );
     }else{
-      title = (<Title>Vendor Managed Inventory -> {this.props.page}</Title>);
+      title = (<Title>{this.state.localeData.APP_NAME} -> {this.props.page}</Title>);
     }
 
     return (

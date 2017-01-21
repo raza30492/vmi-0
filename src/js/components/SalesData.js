@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-
+import { localeData } from '../reducers/localization';
 import { handleErrors, headers } from '../utils/restUtil';
+import { getFits } from '../actions';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
@@ -46,8 +47,25 @@ class SalesData extends Component {
     };
   }
 
+  componentWillMount () {
+    this.setState({localeData: localeData()});
+    if (!this.props.fit.loaded) {
+      this.props.dispatch(getFits(sessionStorage.buyerName));
+    }else if (this.props.fit.fits.length == 0) {
+      alert("Add Fits and SKUs first.");
+      this.context.router.push('/fit');
+    }
+  }
+
   componentDidMount () {
     this._getSalesData();
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
+      alert("Add Fits and SKUs first.");
+      this.context.router.push('/fit');
+    }
   }
 
   _getSalesData () {
@@ -117,6 +135,8 @@ class SalesData extends Component {
             let { errors} = this.state;
             errors[2] = 'Only .xls and .xlsx files are supported.';
             this.setState({errors: errors});
+          }else if (code == 40901) {
+            this.setState({errorMessage:'Duplicate Entry. Delete the existing file first and then upload again.'});
           }
           this.setState({isBusy: false});
         });
@@ -129,6 +149,10 @@ class SalesData extends Component {
   }
 
   _delete (url) {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
     const options = { method: 'delete', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
 
     fetch(url , options)
@@ -165,6 +189,10 @@ class SalesData extends Component {
   }
 
   _onAddClick () {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
     this.setState({uploading: true});
   }
 
@@ -199,7 +227,7 @@ class SalesData extends Component {
   }
 
   render () {
-    const { files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
+    const { localeData, files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
     const count = sales.length;
     const busy = isBusy ? <Spinning /> : null;
@@ -241,25 +269,28 @@ class SalesData extends Component {
 
     const layerMissingFits = (
       <Layer hidden={!fitFlag}  onClose={this._onCloseLayer.bind(this, 'fit')}  closer={true} align="center">
-        <Box size="medium"  pad={{vertical: 'none', horizontal:'small'}}>
-          <Header><Heading tag="h4" strong={true} >These Fits are Missing, Add them first.</Heading></Header>
-          <List>
-            {missingFitItems}
-          </List>
+        <Box direction="column" size="medium" >
+          <Box>
+            <Header><Heading tag="h4" strong={true} >These Fits are Missing, Add them first.</Heading></Header>
+          </Box>
+          <Box>
+            <List>{missingFitItems}</List>
+          </Box>
+          <Box pad={{vertical: 'medium', horizontal:'small'}} />
         </Box>
-        <Box pad={{vertical: 'medium', horizontal:'small'}}/>
       </Layer>
     );
 
     const layerMissingSkus = (
       <Layer hidden={!skuFlag}  onClose={this._onCloseLayer.bind(this, 'sku')}  closer={true} align="center">
-        <Box size="large"  pad={{vertical: 'none', horizontal:'small'}}>
-          <Header><Heading tag="h4" strong={true} >These Skus are Missing, Add them first.</Heading></Header>
-          <List>
-            {missingSkuItems}
-          </List>
+        <Box direction="column" size="large" >
+          <Box pad={{vertical: 'small', horizontal:'small'}}>
+            <Header><Heading tag="h4" strong={true} >These Skus are Missing, Add them first.</Heading></Header>
+          </Box>
+          <Box pad={{vertical: 'large', horizontal:'small'}}>
+            <List>{missingSkuItems}</List>
+          </Box>
         </Box>
-        <Box pad={{vertical: 'medium', horizontal:'small'}}/>
       </Layer>
     );
 
@@ -293,7 +324,7 @@ class SalesData extends Component {
 
     return (
 		  <div>
-		    <AppHeader page="Sales Data" />
+		    <AppHeader page={localeData.label_sales_data} />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" size="medium" alignSelf="center" pad={{vertical:'small'}}>
             <Box><TextInput  value={showYear} onDOMChange={this._onChange.bind(this)} /></Box>
@@ -316,8 +347,12 @@ class SalesData extends Component {
   }
 }
 
+SalesData.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
 let select = (store) => {
-  return { nav: store.nav, user: store.user};
+  return { nav: store.nav, user: store.user, fit: store.fit};
 };
 
 export default connect(select)(SalesData);

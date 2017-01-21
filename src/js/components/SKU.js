@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from 'react-redux';
-
-import { getFits, getBuyers } from '../actions';
+import { localeData } from '../reducers/localization';
+import { getFits } from '../actions';
 import { handleErrors, headers } from '../utils/restUtil';
 
 //Components
@@ -9,7 +9,7 @@ import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
 import Dropzone from 'react-dropzone';
-//import Edit from "grommet/components/icons/base/Edit";
+import Edit from "grommet/components/icons/base/Edit";
 import Footer from 'grommet/components/Footer';
 import Form from 'grommet/components/Form';
 import FormField from 'grommet/components/FormField';
@@ -28,13 +28,12 @@ class SKU extends Component {
   constructor () {
     super();
     this.state = {
-      fitLoaded: false,
       fetching: false,
       isBusy: false,
       addingSingle: false,
       addingBatch: false,
       editing: false,
-      fitName: null,
+      fitName: 'Select Fit',
       skuName: '',
       skus : [],
       files: [],
@@ -45,26 +44,21 @@ class SKU extends Component {
   }
 
   componentWillMount () {
-    if (!this.props.buyer.loaded) {
-      this.props.dispatch(getBuyers());
-    }
+    this.setState({localeData: localeData()});
     if (!this.props.fit.loaded) {
-      this.props.dispatch(getFits());
-    }else if (this.props.fit.fits.length != 0) {
-      this.setState({fitLoaded: true, fitName: this.props.fit.fits[0].name});
-      this._getSkus(this.props.fit.fits[0].name);
-    }else{
-      this.setState({fitLoaded: false});
+      this.props.dispatch(getFits(sessionStorage.buyerName));
+    }else if (this.props.fit.fits.length == 0) {
+      alert("Add Fits first.");
+      this.context.router.push('/fit');
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    if (nextProps.fit.loaded) {
-      if (!this.state.fitLoaded && nextProps.fit.fits.length != 0) {
-        this._getSkus(nextProps.fit.fits[0].name);
-        this.setState({fitName: nextProps.fit.fits[0].name, fitLoaded: true});
-      }
+    if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
+      alert("Add Fits first.");
+      this.context.router.push('/fit');
     }
+
   }
 
   _getSkus (fit) {
@@ -76,7 +70,7 @@ class SKU extends Component {
     .then(response => response.json())
     .then(data => {
       let skus = data._embedded.skus.map(sku => {
-        return { href: sku._links.self.href, name: sku.name};
+        return {name: sku.name, href: sku._links.self.href};
       });
       this.setState({skus: skus, fetching:false});
     })
@@ -102,7 +96,9 @@ class SKU extends Component {
     .then(handleErrors)
     .then((response) => {
       if (response.status == 409) {
-        alert('Duplicate Entry!');
+        response.json().then((resp)=>{
+          alert(resp.message);
+        });
       }else{
         response.json().then((data)=>{
           this.setState({addingSingle:false, skuName: ''});
@@ -158,7 +154,10 @@ class SKU extends Component {
     .then(handleErrors)
     .then((response) => {
       if (response.status == 409) {
-        alert('Duplicate Entry!');
+        response.json().then((resp)=>{
+          this.setState({editing:false, url:null, skuName: ''});
+          alert(resp.message);
+        });
       }else{
         response.json().then((data)=>{
           this.setState({editing:false, url:null, skuName: ''});
@@ -167,40 +166,54 @@ class SKU extends Component {
       }
     })
     .catch(error => {
+      this.setState({editing:false, url:null, skuName: ''});
       console.log(error);
     });
   }
 
   _removeSku (url) {
-    //console.log('removeSku()');
-    const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
-    fetch(url, options)
-    .then(handleErrors)
-    .then(response => {
-      if (response.status == 204 || response.status == 200) {
-        this._getSkus(this.state.fitName);
-      }
-    })
-    .catch(error => {
-      console.log(error);
-    });
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
+    let value = confirm('Are you sure to delete this SKU?');
+    if (value) {
+      const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
+      fetch(url, options)
+      .then(handleErrors)
+      .then(response => {
+        if (response.status == 204 || response.status == 200) {
+          this._getSkus(this.state.fitName);
+        }else if (response.status == 409) {
+          response.json().then((resp)=>{
+            alert(resp.message);
+          });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    }
   }
-
 
   _onFitFilter (e) {
     this.setState({fitName: e.value});
     this._getSkus(e.value);
   }
 
-  _onBuyerFilter (e) {
-    this.setState({buyerName: e.value});
-  }
+  // _onBuyerFilter (e) {
+  //   this.setState({buyerName: e.value});
+  // }
 
   _onChangeInput (e) {
     this.setState({skuName:e.target.value});
   }
 
   _onAddClick (type) {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
     if (type == 'single')
       this.setState({addingSingle: true});
     else if (type == 'batch')
@@ -208,6 +221,10 @@ class SKU extends Component {
   }
 
   _onEditClick (url, name) {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
     this.setState({url: url, skuName: name, editing: true});
   }
 
@@ -234,19 +251,23 @@ class SKU extends Component {
   }
 
   render () {
-    const { fetching, addingSingle, addingBatch, editing, skus, skuName, files, isBusy, fitName: value, fitLoaded } = this.state;
-    if (!fitLoaded) {
+    const { localeData, fetching, addingSingle, addingBatch, editing, skus, skuName, files, isBusy, fitName: value} = this.state;
+    const {role, buyerName } = window.sessionStorage;
+
+    if (role == 'USER' || (role == 'MERCHANT' && buyerName == 'undefined')) {
       return (
         <Box>
-  		    <AppHeader page="SKU" />
+  		    <AppHeader page={localeData.label_sku} />
           <Section>
             <Box alignSelf="center">
-              <h1>You need to add Fits First.</h1>
+              <h3>You need to select buyer on Home page becuase you have 'USER' privilege or 'MERCHANT' privilage with no buyer access.</h3>
             </Box>
           </Section>
   			</Box>
       );
     }
+
+
     const { fits } = this.props.fit;
     const fitItems = fits.map(fit=> fit.name); //Fit Filter all values
     const fitName = (value == null) ? fitItems[0] : value; //Fit Filter selected value
@@ -257,25 +278,41 @@ class SKU extends Component {
 
     let skuItems = [];
     if (skus.length > 0) {
+      let i;
       for(i = 0; i <= (skus.length/3); i++) {
         skuItems.push(
           <Box direction="row" key={i}>
             <Box size="medium">
               <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
                 <span> {(3*i) < skus.length ? skus[3*i].name : null} </span>
-                <span className="secondary"> {(3*i) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i].href)} /> : null} </span>
+                {(3*i) < skus.length ?
+                  <span className="secondary">
+                  <Button icon={<Edit />} onClick={this._onEditClick.bind(this, skus[3*i].href, skus[3*i].name)} />
+                  <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i].href)} />
+                  </span> : null
+                }
               </ListItem>
             </Box>
             <Box size="medium">
               <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
                 <span> {(3*i+1) < skus.length ? skus[3*i+1].name : null} </span>
-                <span className="secondary"> {(3*i+1) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+1].href)} /> : null} </span>
+                {(3*i+1) < skus.length ?
+                  <span className="secondary">
+                    <Button icon={<Edit />} onClick={this._onEditClick.bind(this, skus[3*i+1].href, skus[3*i+1].name)} />
+                    <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+1].href)} />
+                  </span> : null
+                }
               </ListItem>
             </Box>
             <Box size="medium">
               <ListItem justify="between" pad={{vertical:'none',horizontal:'small'}} >
                 <span> {(3*i+2) < skus.length ? skus[3*i+2].name : null} </span>
-                <span className="secondary"> {(3*i+2) < skus.length ? <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+2].href)} /> : null} </span>
+                {(3*i+2) < skus.length ?
+                  <span className="secondary">
+                    <Button icon={<Edit />} onClick={this._onEditClick.bind(this, skus[3*i+2].href, skus[3*i+2].name)} />
+                    <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i+2].href)} />
+                  </span> : null
+                }
               </ListItem>
             </Box>
           </Box>
@@ -354,7 +391,7 @@ class SKU extends Component {
 
     return (
       <div>
-		    <AppHeader page="SKU"/>
+		    <AppHeader page={localeData.label_sku}/>
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row" alignSelf="center">
             <Box><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></Box>
@@ -376,8 +413,20 @@ class SKU extends Component {
   };
 }
 
+SKU.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
 let select = (store) => {
-  return { fit: store.fit, buyer: store.buyer, sku: store.sku};
+  return { fit: store.fit, sku: store.sku, user: store.user};
 };
 
 export default connect(select)(SKU);
+
+
+// {(3*i) < skus.length ?
+//   <span className="secondary">
+//     <Button icon={<Edit />} onClick={this._onEditClick.bind(this, skus[3*i].href, skus[3*i].name)} />
+//     <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i].href)} />
+//   </span> : null
+// }

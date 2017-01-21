@@ -8,10 +8,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 
 @Entity
-@Table(name = "STOCK_DETAILS")
+@Table(
+        name = "STOCK_DETAILS",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"SKU_ID", "YEAR", "WEEK"})
+)
 public class StockDetails{
     
     @Id

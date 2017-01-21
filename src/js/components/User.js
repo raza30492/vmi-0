@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from 'react-redux';
-
+import { localeData } from '../reducers/localization';
 import { getBuyers } from '../actions';
 import { handleErrors, headers } from '../utils/restUtil';
 
@@ -49,6 +49,7 @@ class User extends Component {
   }
 
   componentWillMount () {
+    this.setState({localeData: localeData()});
     if (!this.props.buyer.loaded) {
       this.props.dispatch(getBuyers());
     }
@@ -86,6 +87,7 @@ class User extends Component {
     const { user, buyer, role } = this.state;
     let errors = [];
     let isError = false;
+    console.log(buyer);
     if (user.name == undefined || user.name == '') {
       errors[0] = 'User Name cannot be blank';
       isError = true;
@@ -102,7 +104,7 @@ class User extends Component {
       errors[3] = 'mobile Number  cannot be blank';
       isError = true;
     }
-    if (buyer == 'Select buyer access') {
+    if (role == 'MERCHANT' && buyer == 'Select buyer access') {
       errors[4] = 'Select Buyer access';
       isError = true;
     }
@@ -119,7 +121,7 @@ class User extends Component {
         alert('Duplicate Entry!');
       }else{
         response.json().then((data)=>{
-          this.setState({adding:false});
+          this.setState({adding:false, user: {}, buyer: 'Select buyer access', role: 'USER'});
           this._getUsers();
         });
       }
@@ -130,7 +132,7 @@ class User extends Component {
   }
 
   _updateUser () {
-    const { users, userSelected, role, buyer } = this.state;
+    const { users, userSelected, buyer } = this.state;
     let usr = users[userSelected];
 
     let errors = [];
@@ -151,24 +153,25 @@ class User extends Component {
     if (isError) return;
 
     const buyerHref = this.props.buyer.buyers.find(item=>item.name==buyer).href;
-    usr = {...usr, role: role, buyer: buyerHref };
-    const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(usr)};
-    fetch(window.serviceHost + "/employees/" + usr.id, options)
-    .then(handleErrors)
-    .then((response) => {
-      if (response.status == 409) {
-        alert('Duplicate Entry!');
-      }else{
-        response.json().then((data)=>{
-          this.setState({editing:false,  Selected: -1});
-          this._getUsers();
-        });
-      }
-    })
-    .catch(error => {
-      console.log(error);
-      this.setState({editing:false, userSelected: -1});
-    });
+    console.log(buyerHref);
+    // usr = {...usr, role: role, buyer: buyerHref };
+    // const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(usr)};
+    // fetch(window.serviceHost + "/employees/" + usr.id, options)
+    // .then(handleErrors)
+    // .then((response) => {
+    //   if (response.status == 409) {
+    //     alert('Duplicate Entry!');
+    //   }else{
+    //     response.json().then((data)=>{
+    //       this.setState({editing:false,  Selected: -1});
+    //       this._getUsers();
+    //     });
+    //   }
+    // })
+    // .catch(error => {
+    //   console.log(error);
+    //   this.setState({editing:false, userSelected: -1});
+    // });
   }
 
   _removeUser (url) {
@@ -243,9 +246,10 @@ class User extends Component {
 
   render () {
     const { buyers } = this.props.buyer;
-    let { fetching, adding, viewing, editing, users, user, buyer, roles, role, showBuyerFilter, userSelected, errors } = this.state;
+    let { localeData, fetching, adding, viewing, editing, users, user, buyer, roles, role, showBuyerFilter, userSelected, errors } = this.state;
     const loading = fetching ? (<Spinning />) : null;
     const buyerItems = buyers.map(buyer=>buyer.name);
+    buyerItems.push('No Buyer Access');
     const userItems = users.map((user, index)=>{
       return (
         <TableRow key={index}  >
@@ -358,7 +362,7 @@ class User extends Component {
 
     return (
       <div>
-		    <AppHeader page="User" />
+		    <AppHeader page={localeData.label_user} />
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box size="large" alignSelf="center" >
             <Table>

@@ -1,4 +1,5 @@
 import { handleErrors, headers} from './utils/restUtil';
+let localeData = require('./reducers/localization').localeData();
 
 /////////////////////////  Navigation ////////////////////////////////////////////////////
 export const NAV_ACTIVATE = 'NAV_ACTIVATE';
@@ -6,6 +7,9 @@ export const NAV_ACTIVATE = 'NAV_ACTIVATE';
 export function navActivate (active) {
   return { type: NAV_ACTIVATE, active: active};
 }
+
+//////////////////////////  Miscellaneous  ////////////////////////////////////////////
+export const ERORR_CONFLICT = 'ERORR_CONFLICT';
 
 ////////////////////////////////////////  FIT  ///////////////////////////////////////////
 export const FIT_FETCH_PROGRESS = 'FIT_FETCH_PROGRESS';
@@ -20,11 +24,11 @@ export const FIT_REMOVE_FAIL = 'FIT_REMOVE_FAIL';
 export const TOGGLE_FIT_ADD_FORM = 'TOGGLE_FIT_ADD_FORM';
 export const TOGGLE_FIT_EDIT_FORM = 'TOGGLE_FIT_EDIT_FORM';
 
-export function getFits () {
+export function getFits (buyer) {
   return function (dispatch) {
     dispatch({type:FIT_FETCH_PROGRESS});
     const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
-    fetch(window.serviceHost + '/fits', options)
+    fetch(window.serviceHost + '/fits/search/findByBuyerName?buyerName=' + buyer, options)
     .then(handleErrors)
     .then(response => response.json())
     .then(data => {
@@ -47,8 +51,11 @@ export function addFit (fit) {
     .then(handleErrors)
     .then((response) => {
       if (response.status == 409) {
-        alert('Duplicate Entry!');
-      }else{
+        response.json().then((data)=>{
+          //dispatch({type: FIT_ADD_FAIL});
+          alert(data.message);
+        });
+      } else {
         response.json().then((data)=>{
           dispatch({type: FIT_ADD_SUCCESS,payload: {fit: {href: data._links.self.href, name: data.name}}});
         });
@@ -68,10 +75,13 @@ export function editFit (url, fit) {
     .then(handleErrors)
     .then((response) => {
       if (response.status == 409) {
-        alert('Duplicate Entry!');
-      }else{
         response.json().then((data)=>{
-          dispatch({type: FIT_EDIT_SUCCESS,payload: {fit: {href: data._links.self.href, name: data.name}}});
+          dispatch({type: FIT_EDIT_FAIL});
+          alert(data.message);
+        });
+      } else {
+        response.json().then((data)=>{
+          dispatch({type: FIT_EDIT_SUCCESS,payload: {fit: {href: url, name: data.name}}});
         });
       }
     })
@@ -90,8 +100,10 @@ export function removeFit (url) {
     .then(response => {
       if (response.status == 204 || response.status == 200) {
         dispatch({type: FIT_REMOVE_SUCCESS, payload: {href: url}});
-      }else{
-        console.log(response);
+      }else if (response.status == 409) {
+        response.json().then((data)=>{
+          alert(data.message);
+        });
       }
     })
     .catch(error => {
@@ -216,15 +228,22 @@ export function authenticate (credential) {
           sessionStorage.role = data.role;
           sessionStorage.buyerName = data.buyerName;
           sessionStorage.buyerHref = data.buyerHref;
+
+          if (data.role == "USER" || (data.role == 'MERCHANT' && data.buyerName == null)) {
+            sessionStorage.privilege = 'USER';
+
+          } else {
+            sessionStorage.privilege = data.role;
+          }
           dispatch({type: AUTH_SUCCESS});
         });
       } else if (response.status == 401) {
-        dispatch({type: AUTH_FAIL, payload: {error: ['Incorrect Username or Password.']}});
+        dispatch({type: AUTH_FAIL, payload: {error: localeData.login_authentication_fail}});
       }
     })
     .catch(error=>{
       console.log(error);
-      dispatch({type: AUTH_FAIL, payload: {error: ['Some Error occured. Try again later.']}});
+      dispatch({type: AUTH_FAIL, payload: {error: localeData.login_error}});
     });
   };
 }
