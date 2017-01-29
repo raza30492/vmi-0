@@ -83,7 +83,6 @@ class User extends Component {
   }
 
   _addUser () {
-    console.log('addSku()');
     const { user, buyer, role } = this.state;
     let errors = [];
     let isError = false;
@@ -132,7 +131,7 @@ class User extends Component {
   }
 
   _updateUser () {
-    const { users, userSelected, buyer } = this.state;
+    const { users, userSelected, buyer, role } = this.state;
     let usr = users[userSelected];
 
     let errors = [];
@@ -152,29 +151,39 @@ class User extends Component {
     this.setState({errors: errors});
     if (isError) return;
 
-    const buyerHref = this.props.buyer.buyers.find(item=>item.name==buyer).href;
-    console.log(buyerHref);
-    // usr = {...usr, role: role, buyer: buyerHref };
-    // const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(usr)};
-    // fetch(window.serviceHost + "/employees/" + usr.id, options)
-    // .then(handleErrors)
-    // .then((response) => {
-    //   if (response.status == 409) {
-    //     alert('Duplicate Entry!');
-    //   }else{
-    //     response.json().then((data)=>{
-    //       this.setState({editing:false,  Selected: -1});
-    //       this._getUsers();
-    //     });
-    //   }
-    // })
-    // .catch(error => {
-    //   console.log(error);
-    //   this.setState({editing:false, userSelected: -1});
-    // });
+    const buyerObj = this.props.buyer.buyers.find(item=>item.name==buyer);
+    if (buyerObj != undefined) {
+      usr = {...usr, role: role, buyer: buyerObj.href };
+    } else {
+      usr = {...usr, role: role};
+    }
+
+    console.log(usr);
+    const options = {method: 'PUT', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}, body: JSON.stringify(usr)};
+    fetch(window.serviceHost + "/employees/" + usr.id, options)
+    .then(handleErrors)
+    .then((response) => {
+      if (response.status == 409) {
+        alert('Duplicate Entry!');
+      }else{
+        response.json().then((data)=>{
+          this.setState({editing:false,  Selected: -1});
+          this._getUsers();
+        });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      this.setState({editing:false, userSelected: -1});
+    });
   }
 
   _removeUser (url) {
+    var value = confirm("Are you sure you want to delete this user.");
+    if (!value) {
+      return;
+    }
+
     const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(url, options)
     .then(handleErrors)
@@ -237,7 +246,7 @@ class User extends Component {
 
   _onCloseLayer (layer) {
     if( layer == 'add')
-      this.setState({adding: false});
+      this.setState({adding: false, user: {}});
     else if (layer == 'view')
       this.setState({viewing: false, userSelected: -1});
     else if (layer == 'edit')

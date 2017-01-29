@@ -61,7 +61,7 @@ class Buyer extends Component {
     }
     const buyer = {name: buyerName};
     this.props.dispatch(editBuyer(href,buyer));
-    this.setState({href: null, buyerName: ''});
+    this.setState({href: null, buyerName: '', errors: []});
   }
 
   _removeBuyer (buyer, href) {

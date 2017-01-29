@@ -350,21 +350,25 @@ public class ProposalService {
         if (week4 != 0) {
             cell = row.createCell(i++);
             cell.setCellValue("CUM SALE\n(" + year + ") WK" + week4);
+            cell.setCellStyle(style);
         }
 
         if (week3 != 0) {
             cell = row.createCell(i++);
             cell.setCellValue("CUM SALE\n(" + year + ") WK" + week3);
+            cell.setCellStyle(style);
         }
 
         if (week2 != 0) {
             cell = row.createCell(i++);
             cell.setCellValue("CUM SALE\n(" + year + ") WK" + week2);
+            cell.setCellStyle(style);
         }
 
         if (week4 != 0 || week3 != 0 || week2 != 0) {
             cell = row.createCell(i++);
             cell.setCellValue("CUM SALE(" + year + ") WK" + week1);
+            cell.setCellStyle(style);
         }
 
         cell = row.createCell(i++);

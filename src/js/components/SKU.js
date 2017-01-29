@@ -48,15 +48,19 @@ class SKU extends Component {
     if (!this.props.fit.loaded) {
       this.props.dispatch(getFits(sessionStorage.buyerName));
     }else if (this.props.fit.fits.length == 0) {
-      alert("Add Fits first.");
-      this.context.router.push('/fit');
+      if (sessionStorage.privilege != 'USER') {
+        alert("Add Fits first.");
+        this.context.router.push('/fit');
+      }
     }
   }
 
   componentWillReceiveProps (nextProps) {
     if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
-      alert("Add Fits first.");
-      this.context.router.push('/fit');
+      if (sessionStorage.privilege != 'USER') {
+        alert("Add Fits first.");
+        this.context.router.push('/fit');
+      }
     }
 
   }
@@ -112,12 +116,17 @@ class SKU extends Component {
   }
 
   _addBatchSku (e) {
+    const { fitName } = this.state;
+    if (fitName == 'Select Fit') {
+      this.setState({errors: ['Fit not selected.','']});
+      return;
+    }
     if (this.state.files.length == 0 || this.state.files.length > 1 ) {
       this.setState({errors: ['','Choose one excel file containing SKU']});
       return;
     }
     this.setState({isBusy: true});
-    const { fitName } = this.state;
+
     var data = new FormData();
     data.append('fit', fitName);
     data.append("file", this.state.files[0]);
@@ -252,15 +261,30 @@ class SKU extends Component {
 
   render () {
     const { localeData, fetching, addingSingle, addingBatch, editing, skus, skuName, files, isBusy, fitName: value} = this.state;
-    const {role, buyerName } = window.sessionStorage;
+    const {role, buyerName, privilege } = window.sessionStorage;
 
-    if (role == 'USER' || (role == 'MERCHANT' && buyerName == 'undefined')) {
+    let message = (role == 'USER') ? 'You need to select buyer in app header.' : "You need to select buyer in app header since you have 'USER' privilege.";
+
+    if (privilege == 'USER' && buyerName == 'undefined') {
       return (
         <Box>
   		    <AppHeader page={localeData.label_sku} />
           <Section>
             <Box alignSelf="center">
-              <h3>You need to select buyer on Home page becuase you have 'USER' privilege or 'MERCHANT' privilage with no buyer access.</h3>
+              <h3>{message}</h3>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
+
+    if (privilege == 'USER' && this.props.fit.loaded && this.props.fit.fits.length == 0) {
+      return (
+        <Box>
+  		    <AppHeader page={localeData.label_sku} />
+          <Section>
+            <Box alignSelf="center">
+              <h3>No SKU data available for selected buyer: {sessionStorage.buyerName}</h3>
             </Box>
           </Section>
   			</Box>
@@ -354,7 +378,7 @@ class SKU extends Component {
         <Form>
           <Header><Heading tag="h3" strong={true}>Upload</Heading></Header>
           <FormFields>
-            <FormField>
+            <FormField error={this.state.errors[0]}>
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </FormField>
             <FormField label="Excel File containing SKU" error={this.state.errors[1]} >

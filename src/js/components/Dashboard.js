@@ -1,21 +1,19 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { getBuyers } from '../actions';
-import { ROLE_MERCHANT } from '../utils/util';
+import { ROLE_MERCHANT, ROLE_USER } from '../utils/util';
 import { localeData } from '../reducers/localization';
 //import history from '../history';
 
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';
 import Section from 'grommet/components/Section';
-import Select from 'grommet/components/Select';
 import Toast from 'grommet/components/Toast';
 
 class Dashboard extends Component {
   constructor () {
 	  super();
     this.state = {
-      message: "You do not have access to any buyer. You will have 'USER' privilage until buyer access is granted by administrator.",
+      message: '',
       showToast: false,
       showBuyerFilter: false,
       buyerName: 'Select Buyer'
@@ -33,28 +31,16 @@ class Dashboard extends Component {
 
   componentDidMount () {
     const { role, buyerName, privilege } = window.sessionStorage;
-    console.log(role);
-    console.log(privilege);
-    if (privilege == 'USER') {
+    if (privilege == 'USER' && (buyerName == 'undefined')) {
       if (role == ROLE_MERCHANT) {
-        this.setState({showToast: true});
+        const message = "You need to select buyer in app header before proceeding further since you do not have buyer access.Contact Administrator for buyer access.";
+        this.setState({showToast: true, message: message});
       }
-      if (!this.props.buyer.loaded) {
-        this.props.dispatch(getBuyers());
-      }
-      if (buyerName != 'undefined') {
-        this.setState({buyerName: buyerName});
+      if (role == ROLE_USER) {
+        const message = "You need to select buyer in app header before proceeding further.";
+        this.setState({showToast: true, message: message});
       }
     }
-  }
-
-  _onBuyerFilter (event) {
-    let buyerName = event.value;
-    const { buyers } = this.props.buyer;
-    const buyer = buyers.find(buyer => buyer.name == buyerName);
-    window.sessionStorage.buyerName = buyer.name;
-    window.sessionStorage.buyerHref = buyer.href;
-    this.setState({buyerName: buyerName});
   }
 
   _onCloseToast () {
@@ -62,13 +48,9 @@ class Dashboard extends Component {
   }
 
   render () {
-    const { showToast, buyerName, message, localeData } = this.state;
-    const { buyers } = this.props.buyer;
-    const buyerItems = buyers.map(buyer => buyer.name);
+    const { showToast, message, localeData } = this.state;
 
-    const filter = sessionStorage.privilege != 'USER' ? null : <Box size='small' alignSelf='center'><Select options={buyerItems} value={buyerName} onChange={this._onBuyerFilter.bind(this)}/></Box>;
-
-    const toast = !showToast ? null :<Toast status="warning" onClose={this._onCloseToast.bind(this)}>{message}</Toast>;
+    const toast = !showToast ? null :<Toast status="ok" onClose={this._onCloseToast.bind(this)}>{message}</Toast>;
     return (
 		  <Box>
 		    <AppHeader page={localeData.label_home} />
@@ -76,7 +58,6 @@ class Dashboard extends Component {
           <Box alignSelf="center">
             {toast}
             <h1>Welcome to Vendor Managed Inventory Application!</h1>
-            {filter}
           </Box>
         </Section>
 			</Box>

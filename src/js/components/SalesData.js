@@ -29,10 +29,11 @@ import AppHeader from './AppHeader';
 class SalesData extends Component {
   constructor () {
 	  super();
+    const today = new Date();
     this.state = {
       uploading: false,
       isBusy: false,
-      showYear: '2016',
+      showYear: today.getFullYear().toString(),
       buyerName: sessionStorage.buyerName,
       year: '',
       week: '',
@@ -49,22 +50,28 @@ class SalesData extends Component {
 
   componentWillMount () {
     this.setState({localeData: localeData()});
-    if (!this.props.fit.loaded) {
+    if (!this.props.fit.loaded && sessionStorage.buyerName != 'undefined') {
       this.props.dispatch(getFits(sessionStorage.buyerName));
     }else if (this.props.fit.fits.length == 0) {
-      alert("Add Fits and SKUs first.");
-      this.context.router.push('/fit');
+      if (sessionStorage.privilege != 'USER') {
+        alert("Add Fits and SKUs first.");
+        this.context.router.push('/fit');
+      }
     }
   }
 
   componentDidMount () {
-    this._getSalesData();
+    if (sessionStorage.buyerName != 'undefined') {
+      this._getSalesData();
+    }
   }
 
   componentWillReceiveProps (nextProps) {
     if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
-      alert("Add Fits and SKUs first.");
-      this.context.router.push('/fit');
+      if (sessionStorage.privilege != 'USER') {
+        alert("Add Fits and SKUs first.");
+        this.context.router.push('/fit');
+      }
     }
   }
 
@@ -227,6 +234,33 @@ class SalesData extends Component {
   }
 
   render () {
+    const {role, buyerName, privilege } = window.sessionStorage;
+    let message = (role == 'USER') ? 'You need to select buyer in app header.' : "You need to select buyer in app header since you have 'USER' privilege.";
+    if (privilege == 'USER' && buyerName == 'undefined') {
+      return (
+        <Box>
+  		    <AppHeader page={this.state.localeData.label_sales_data} />
+          <Section>
+            <Box alignSelf="center">
+              <h3>{message}</h3>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
+    if (sessionStorage.privilege == 'USER' && this.props.fit.loaded && this.props.fit.fits.length == 0) {
+      return (
+        <Box>
+  		    <AppHeader page={this.state.localeData.label_sales_data} />
+          <Section>
+            <Box alignSelf="center">
+              <h3>No Sales data available for selected buyer: {sessionStorage.buyerName}</h3>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
+
     const { localeData, files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
     const count = sales.length;

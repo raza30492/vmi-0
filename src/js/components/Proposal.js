@@ -28,6 +28,7 @@ import Tabs from 'grommet/components/Tabs';
 class Proposal extends Component {
   constructor () {
 	  super();
+    const today = new Date();
     this.state = {
       isClose: true,  // Whether Notification is closed
       isBusy: false,
@@ -38,7 +39,7 @@ class Proposal extends Component {
       fitName: '',
       mainProposals: [],
       summaryProposals: [],
-      year: '2016',
+      year: today.getFullYear().toString(),
       data: {}, //request data for Calculate rest call
       skuFlag: false, // Show missing Sku Layer
       missingSkus: [],
@@ -47,26 +48,31 @@ class Proposal extends Component {
   }
 
   componentWillMount () {
+    // const today = new Date();
+    // this.setState({year: today.getFullYear().toString()});
+
     this.setState({localeData: localeData()});
-    if (!this.props.fit.loaded) {
-      console.log('check1');
+    if (!this.props.fit.loaded && sessionStorage.buyerName != 'undefined') {
       this.props.dispatch(getFits(sessionStorage.buyerName));
     }else if (this.props.fit.fits.length != 0) {
-      console.log('check2');
       this.setState({fitName: this.props.fit.fits[0].name});
       this._getProposals(this.props.fit.fits[0].name);
     }else{
-      console.log('check3');
-      alert('Add Fits, SKUs and upload sales data first!');
-      this.context.router.push('/fit');
+      if (sessionStorage.privilege != 'USER') {
+        alert('Add Fits, SKUs and upload sales data first!');
+        this.context.router.push('/fit');
+      }
     }
+
   }
 
   componentWillReceiveProps (nextProps) {
     if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length == 0) {
-      alert("Add Fits, SKUs and upload sales data first!");
-      this.context.router.push('/fit');
-    }else if (!this.props.fit.loaded && nextProps.fit.loaded && nextProps.fit.fits.length != 0) {
+      if (sessionStorage.privilege != 'USER') {
+        alert('Add Fits, SKUs and upload sales data first!');
+        this.context.router.push('/fit');
+      }
+    }else if (nextProps.fit.loaded && nextProps.fit.fits.length != 0) {
       this.setState({fitName: nextProps.fit.fits[0].name});
       this._getProposals(nextProps.fit.fits[0].name);
     }
@@ -229,6 +235,32 @@ class Proposal extends Component {
   }
 
   render () {
+    const {role, buyerName, privilege } = window.sessionStorage;
+    let msg = (role == 'USER') ? 'You need to select buyer in app header.' : "You need to select buyer in app header since you have 'USER' privilege.";
+    if (privilege == 'USER' && buyerName == 'undefined') {
+      return (
+        <Box>
+  		    <AppHeader page={this.state.localeData.label_proposal} />
+          <Section>
+            <Box alignSelf="center">
+              <h3>{msg}</h3>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
+    if (sessionStorage.privilege == 'USER' && this.props.fit.loaded && this.props.fit.fits.length == 0) {
+      return (
+        <Box>
+  		    <AppHeader page={this.state.localeData.label_proposal} />
+          <Section>
+            <Box alignSelf="center">
+              <h3>No Proposal data available for selected buyer: {sessionStorage.buyerName}</h3>
+            </Box>
+          </Section>
+  			</Box>
+      );
+    }
     const { fits } = this.props.fit;
     const { localeData, fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
 

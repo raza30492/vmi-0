@@ -64,5 +64,6 @@ public class BuyerService {
         }
         fitRepository.deleteInBatch(fits);
         buyerRepository.delete(id);
+        //buyerRepository.findA
     }
 }

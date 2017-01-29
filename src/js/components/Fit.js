@@ -110,16 +110,18 @@ class Fit extends Component {
 
 
   render () {
-    const {role, buyerName } = window.sessionStorage;
+    const {role, buyerName, privilege } = window.sessionStorage;
     const { localeData } = this.state;
 
-    if (role == 'USER' || (role == 'MERCHANT' && buyerName == 'undefined')) {
+    let message = (role == 'USER') ? 'You need to select buyer in app header.' : "You need to select buyer in app header since you have 'USER' privilege.";
+
+    if (privilege == 'USER' && buyerName == 'undefined') {
       return (
         <Box>
   		    <AppHeader page={localeData.label_fit} />
           <Section>
             <Box alignSelf="center">
-              <h3>You need to select buyer on Home page becuase you have 'USER' privilege or 'MERCHANT' privilage with no buyer access.</h3>
+              <h3>{message}</h3>
             </Box>
           </Section>
   			</Box>
