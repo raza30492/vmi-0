@@ -417,12 +417,19 @@ class SKU extends Component {
       <div>
 		    <AppHeader page={localeData.label_sku}/>
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
-          <Box direction="row" alignSelf="center">
-            <Box><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></Box>
-            <Box pad={{horizontal:'small'}}><Button label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  /></Box>
-            <Box pad={{horizontal:'small'}}><Button label="Add Batch" onClick={this._onAddClick.bind(this, 'batch')}  /></Box>
+          <Box direction="row">
+            <Box basis="1/3" align="start">
+              <Button label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  />
+            </Box>
+            <Box basis="1/3" align="center">
+              <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
+            </Box>
+            <Box basis="1/3" align="end">
+              <Button label="Add Batch" onClick={this._onAddClick.bind(this, 'bacth')}  />
+            </Box>
           </Box>
-          <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium'}}>{loading}</Box>
+
+          <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium', vertical:'medium'}}>{loading}</Box>
           <Box direction="column" alignSelf="center" pad={{vertical: 'large'}}>
             {skuItems}
             <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage={'No Skus found for ' + fitName} />

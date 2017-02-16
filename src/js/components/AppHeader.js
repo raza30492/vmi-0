@@ -122,7 +122,7 @@ class AppHeader extends Component {
     }
 
     return (
-      <Header size="large" justify="between" colorIndex="neutral-2" pad={{horizontal: "medium"}}>
+      <Header size="large" justify="between" colorIndex="neutral-1-a" pad={{horizontal: "medium"}}>
         {title}
         {login}
         {layerSelectBuyer}

@@ -19,6 +19,7 @@ import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceholder from 'grommet-addons/components/ListPlaceholder';
 import Section from 'grommet/components/Section';
+import Select from 'grommet/components/Select';
 import Spinning from 'grommet/components/icons/Spinning';
 import Trash from "grommet/components/icons/base/Trash";
 import TextInput from 'grommet/components/TextInput';
@@ -29,11 +30,9 @@ import AppHeader from './AppHeader';
 class SalesData extends Component {
   constructor () {
 	  super();
-    const today = new Date();
     this.state = {
       uploading: false,
       isBusy: false,
-      showYear: today.getFullYear().toString(),
       buyerName: sessionStorage.buyerName,
       year: '',
       week: '',
@@ -58,11 +57,18 @@ class SalesData extends Component {
         this.context.router.push('/fit');
       }
     }
+    //calculating 15 years array
+    const curYear = new Date().getFullYear();
+    let years = [];
+    for (i = 0; i < 15; i++) {
+      years.push((curYear-i).toString());
+    }
+    this.setState({years: years, showYear: years[0]});
   }
 
   componentDidMount () {
     if (sessionStorage.buyerName != 'undefined') {
-      this._getSalesData();
+      this._getSalesData(this.state.showYear);
     }
   }
 
@@ -75,10 +81,10 @@ class SalesData extends Component {
     }
   }
 
-  _getSalesData () {
+  _getSalesData (year) {
     const { showYear, buyerName } = this.state;
     const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
-    fetch(window.serviceHost + "/stocks/" + showYear +"?buyer=" + buyerName, options)
+    fetch(window.serviceHost + "/stocks/" + year +"?buyer=" + buyerName, options)
     .then(handleErrors)
     .then((response)=>{
       if (response.status == 200) {
@@ -212,7 +218,9 @@ class SalesData extends Component {
   }
 
   _onChange (event) {
-    this.setState({showYear: event.target.value});
+    console.log('onChange()');
+    this.setState({showYear: event.value});
+    this._getSalesData(event.value);
   }
 
   _onDrop (files) {
@@ -261,7 +269,7 @@ class SalesData extends Component {
       );
     }
 
-    const { localeData, files, uploading, sales, showYear, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
+    const { localeData, files, uploading, sales, showYear,years, missingFits, fitFlag, missingSkus, skuFlag, errors, errorMessage, isBusy } = this.state;
     const content = files.length != 0 ? (<div>{files[0].name}</div>) : (<div>Drop file here or Click to open file browser</div>);
     const count = sales.length;
     const busy = isBusy ? <Spinning /> : null;
@@ -360,9 +368,8 @@ class SalesData extends Component {
 		  <div>
 		    <AppHeader page={localeData.label_sales_data} />
         <Section direction="column" pad={{vertical: 'large', horizontal:'small'}}>
-          <Box direction="row" size="medium" alignSelf="center" pad={{vertical:'small'}}>
-            <Box><TextInput  value={showYear} onDOMChange={this._onChange.bind(this)} /></Box>
-            <Box><Button label="View Sales Data" onClick={this._getSalesData.bind(this)} /></Box>
+          <Box direction="row" size="small"  alignSelf="center" pad={{vertical:'small'}}>
+            <Select   options={years} value={showYear} onChange={this._onChange.bind(this)} />
           </Box>
           <Box size="large" alignSelf="center" >
             <List selectable={true} > {listItems} </List>

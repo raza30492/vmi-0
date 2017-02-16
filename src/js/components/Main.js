@@ -12,7 +12,7 @@ class Main extends Component {
   render () {
     const { active } = this.props.nav;
 
-    var pane1 = active ? <NavSidebar /> : null;
+    var pane1 = active ? <NavSidebar routePath={this.props.children.props.location.pathname} /> : null;
     var pane2 = this.props.children;
 
     return (

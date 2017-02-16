@@ -16,10 +16,8 @@ class NavSidebar extends Component {
 
   constructor () {
     super();
-
     this._onClose = this._onClose.bind(this);
   }
-
 
   _onClose () {
     console.log('Close Button clicked');
@@ -30,11 +28,11 @@ class NavSidebar extends Component {
     const { items: itemsDefault, itemsAdmin } = this.props.nav;
     const { role } = window.sessionStorage;
     const items = (role == ROLE_ADMIN) ? itemsAdmin : itemsDefault;
+    console.log(this.props.routePath);
     var links = items.map( (page, index) => {
+      var value = (page.path == this.props.routePath) ? 'active' : '';
       return (
-        <Anchor key={index} path={page.path} method="push">
-          {page.label}
-        </Anchor>
+        <Anchor className={value} key={page.label} path={page.path} label={page.label} />
       );
     });
     return (
@@ -45,7 +43,7 @@ class NavSidebar extends Component {
           </Title>
           <Button icon={<Close />} onClick={this._onClose} />
         </Header>
-        <Menu primary={true}>
+        <Menu fill={true} primary={true}>
           {links}
         </Menu>
       </Sidebar>
