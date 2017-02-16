@@ -28,7 +28,6 @@ class NavSidebar extends Component {
     const { items: itemsDefault, itemsAdmin } = this.props.nav;
     const { role } = window.sessionStorage;
     const items = (role == ROLE_ADMIN) ? itemsAdmin : itemsDefault;
-    console.log(this.props.routePath);
     var links = items.map( (page, index) => {
       var value = (page.path == this.props.routePath) ? 'active' : '';
       return (

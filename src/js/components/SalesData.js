@@ -22,7 +22,6 @@ import Section from 'grommet/components/Section';
 import Select from 'grommet/components/Select';
 import Spinning from 'grommet/components/icons/Spinning';
 import Trash from "grommet/components/icons/base/Trash";
-import TextInput from 'grommet/components/TextInput';
 
 import AppHeader from './AppHeader';
 
@@ -60,7 +59,7 @@ class SalesData extends Component {
     //calculating 15 years array
     const curYear = new Date().getFullYear();
     let years = [];
-    for (i = 0; i < 15; i++) {
+    for (var i = 0; i < 15; i++) {
       years.push((curYear-i).toString());
     }
     this.setState({years: years, showYear: years[0]});
@@ -82,7 +81,7 @@ class SalesData extends Component {
   }
 
   _getSalesData (year) {
-    const { showYear, buyerName } = this.state;
+    const { buyerName } = this.state;
     const options = { method: 'get', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     fetch(window.serviceHost + "/stocks/" + year +"?buyer=" + buyerName, options)
     .then(handleErrors)

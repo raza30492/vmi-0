@@ -28,7 +28,6 @@ import Tabs from 'grommet/components/Tabs';
 class Proposal extends Component {
   constructor () {
 	  super();
-    const today = new Date();
     this.state = {
       isClose: true,  // Whether Notification is closed
       isBusy: false,
@@ -50,7 +49,7 @@ class Proposal extends Component {
     //calculating 15 years array
     const curYear = new Date().getFullYear();
     let years = [];
-    for (i = 0; i < 15; i++) {
+    for (var i = 0; i < 15; i++) {
       years.push((curYear-i).toString());
     }
     this.setState({years: years, year: years[0], localeData:localeData()});

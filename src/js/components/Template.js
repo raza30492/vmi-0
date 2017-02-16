@@ -23,7 +23,6 @@ export default class Template extends Component {
   }
 
   componentDidMount () {
-    console.log('componentDidMount');
     this._getTemplates();
   }
 

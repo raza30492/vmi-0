@@ -10,9 +10,9 @@ import routes from "./routes";
 import store from "./store";
 
 (function () {
-  // const baseUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-  // window.serviceHost = baseUrl + "/vmi/api";
-  window.serviceHost = "http://localhost:8888/vmi/api";
+  const baseUrl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+  window.serviceHost = baseUrl + "/vmi/api";
+  //window.serviceHost = "http://localhost:8888/vmi/api";
 })();
 
 let element = document.getElementById('content');
