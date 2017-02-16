@@ -39,7 +39,6 @@ class Proposal extends Component {
       fitName: '',
       mainProposals: [],
       summaryProposals: [],
-      year: today.getFullYear().toString(),
       data: {}, //request data for Calculate rest call
       skuFlag: false, // Show missing Sku Layer
       missingSkus: [],
@@ -48,15 +47,19 @@ class Proposal extends Component {
   }
 
   componentWillMount () {
-    // const today = new Date();
-    // this.setState({year: today.getFullYear().toString()});
+    //calculating 15 years array
+    const curYear = new Date().getFullYear();
+    let years = [];
+    for (i = 0; i < 15; i++) {
+      years.push((curYear-i).toString());
+    }
+    this.setState({years: years, year: years[0], localeData:localeData()});
 
-    this.setState({localeData: localeData()});
     if (!this.props.fit.loaded && sessionStorage.buyerName != 'undefined') {
       this.props.dispatch(getFits(sessionStorage.buyerName));
     }else if (this.props.fit.fits.length != 0) {
       this.setState({fitName: this.props.fit.fits[0].name});
-      this._getProposals(this.props.fit.fits[0].name);
+      this._getProposals(this.props.fit.fits[0].name, years[0]);
     }else{
       if (sessionStorage.privilege != 'USER') {
         alert('Add Fits, SKUs and upload sales data first!');
@@ -74,14 +77,14 @@ class Proposal extends Component {
       }
     }else if (nextProps.fit.loaded && nextProps.fit.fits.length != 0) {
       this.setState({fitName: nextProps.fit.fits[0].name});
-      this._getProposals(nextProps.fit.fits[0].name);
+      this._getProposals(nextProps.fit.fits[0].name, this.state.year);
     }
   }
 
-  _getProposals (fitName) {
+  _getProposals (fitName, year) {
     const options = {method: 'GET', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
     //fetch main Proposals
-    let url = window.serviceHost + '/proposals/main/' + this.state.year + '?fitName=' + fitName;
+    let url = window.serviceHost + '/proposals/main/' + year + '?fitName=' + fitName;
     fetch(url, options)
     .then(handleErrors)
     .then(response => response.json())
@@ -93,7 +96,7 @@ class Proposal extends Component {
       alert('Some Error occured loading data');
     });
     //Fetch Summary Proposals
-    url = window.serviceHost + '/proposals/summary/' + this.state.year + '?fitName=' + fitName;
+    url = window.serviceHost + '/proposals/summary/' + year + '?fitName=' + fitName;
     fetch(url, options)
     .then(handleErrors)
     .then(response => response.json())
@@ -192,17 +195,14 @@ class Proposal extends Component {
     }
   }
 
-
-  _viewHistory () {
-    this._getProposals(this.state.fitName);
-  }
-
   _onFitFilter (e) {
     this.setState({fitName: e.value});
+    this._getProposals(e.value, this.state.year);
   }
 
   _onChange (e) {
-    this.setState({year: e.target.value});
+    this.setState({year: e.value});
+    this._getProposals(this.state.fitName, e.value);
   }
 
   _onChangeInput ( event ) {
@@ -227,7 +227,7 @@ class Proposal extends Component {
 
   _onCloseLayer (layer) {
     this.setState({calculating: false});
-    this._getProposals(this.state.fitName);
+    this._getProposals(this.state.fitName, this.state.year);
   }
 
   _onClose () {
@@ -262,7 +262,7 @@ class Proposal extends Component {
       );
     }
     const { fits } = this.props.fit;
-    const { localeData, fitName, year, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
+    const { localeData, fitName, year, years, mainProposals, summaryProposals, calculating, data, isClose, status, message, skuFlag, missingSkus, errors, isBusy } = this.state;
 
     const notification = isClose ? null : (<Notification full={false} closer={true} message={message} status={status} size="medium" onClose={this._onClose.bind(this)} /> );
     const busy = isBusy ? <Spinning /> : null;
@@ -356,8 +356,7 @@ class Proposal extends Component {
           <Box>{notification}</Box>
           <Box direction="row" size="xxlarge" alignSelf="center" pad={{vertical:'small'}}>
             <Box><Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/></Box>
-            <Box><input type="text"  value={year} onChange={this._onChange.bind(this)} /></Box>
-            <Box><Button label="View Proposal History" onClick={this._viewHistory.bind(this)} /></Box>
+            <Box><Select   options={years} value={year} onChange={this._onChange.bind(this)} /></Box>
           </Box>
           <Box size="large" alignSelf="center" >
             <Tabs justify="center">
