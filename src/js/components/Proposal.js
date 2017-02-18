@@ -139,7 +139,7 @@ class Proposal extends Component {
     .then(handleErrors)
     .then((response)=>{
       if ( response.status == 201 || response.status == 200) {
-        this._getProposals(fitName);
+        this._getProposals(fitName,this.state.year);
         this.setState({calculating: false, isBusy: false});
       }else if (response.status == 409) {
         response.json().then((resp)=>{

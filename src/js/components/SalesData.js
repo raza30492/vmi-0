@@ -133,7 +133,7 @@ class SalesData extends Component {
     .then((response)=>{
       if (response.status == 200 || response.status == 201) {
         this.setState({uploading:false, isBusy: false});
-        this._getSalesData();
+        this._getSalesData(this.state.showYear);
       }else if (response.status == 409) {
         response.json().then((data)=>{
           const { code } = data;
@@ -172,7 +172,7 @@ class SalesData extends Component {
     .then((response)=>{
       if (response.status == 204 || response.status == 200) {
         console.log('file deleted successfully.');
-        this._getSalesData();
+        this._getSalesData(this.state.showYear);
       }
     })
     .catch((error)=>{

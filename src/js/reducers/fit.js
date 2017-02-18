@@ -1,4 +1,4 @@
-import { FIT_FETCH_PROGRESS, FIT_FETCH_SUCCESS, FIT_FETCH_FAIL, TOGGLE_FIT_ADD_FORM, FIT_ADD_SUCCESS, FIT_ADD_FAIL, FIT_REMOVE_SUCCESS, TOGGLE_FIT_EDIT_FORM, FIT_EDIT_SUCCESS, FIT_EDIT_FAIL } from "../actions";
+import { FIT_FETCH_PROGRESS, FIT_FETCH_SUCCESS, FIT_FETCH_FAIL, TOGGLE_FIT_ADD_FORM, FIT_ADD_SUCCESS, FIT_ADD_FAIL, FIT_REMOVE_SUCCESS, TOGGLE_FIT_EDIT_FORM, FIT_EDIT_SUCCESS, FIT_EDIT_FAIL, FIT_CLEAR } from "../actions";
 
 const initialState = {
   loaded: false,
@@ -32,7 +32,8 @@ const handlers = {
       return fit.href != action.payload.href;
     });
     return ({fits: fits});
-  }
+  },
+  [FIT_CLEAR]: (_, action) => ({loaded: false, fits: []})
 };
 
 export default function fit (state = initialState, action) {

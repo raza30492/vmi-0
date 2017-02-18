@@ -25,4 +25,6 @@ public interface SKURepository extends JpaRepository<SKU, Long> {
     
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER') or hasRole('ROLE_MERCHANT')")
     Long countByFit(Fit fit);
+    
+    List<SKU> deleteByFit(Fit fit);
 }

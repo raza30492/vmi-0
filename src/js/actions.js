@@ -23,6 +23,7 @@ export const FIT_REMOVE_SUCCESS = 'FIT_REMOVE_SUCCESS';
 export const FIT_REMOVE_FAIL = 'FIT_REMOVE_FAIL';
 export const TOGGLE_FIT_ADD_FORM = 'TOGGLE_FIT_ADD_FORM';
 export const TOGGLE_FIT_EDIT_FORM = 'TOGGLE_FIT_EDIT_FORM';
+export const FIT_CLEAR = 'FIT_CLEAR';
 
 export function getFits (buyer) {
   return function (dispatch) {

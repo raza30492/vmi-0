@@ -41,4 +41,12 @@ public class SKURestController {
             return new ResponseEntity<>(sku, HttpStatus.OK);
         }
     }
+    
+    @DeleteMapping(value = {"/skus/byFit"})
+    public ResponseEntity<?> deleteBatch(@RequestParam("fitName") String fitName){
+        logger.info("deleteBatch(): /skus/" + fitName);
+        skuService.deleteBatch(fitName);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    
 }

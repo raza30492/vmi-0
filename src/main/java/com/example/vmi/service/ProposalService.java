@@ -25,6 +25,9 @@ import com.example.vmi.entity.Fit;
 import com.example.vmi.entity.StockDetails;
 import com.example.vmi.repository.FitRepository;
 import com.example.vmi.repository.StockDetailsRepository;
+import com.example.vmi.storage.ProposalStorageService;
+import com.example.vmi.storage.StorageService;
+import com.example.vmi.util.CsvUtil;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,9 @@ public class ProposalService {
 
     @Autowired
     FitRepository fitRepository;
+    
+    @Autowired
+    ProposalStorageService storageService;
     
     private XSSFCellStyle style;
 
@@ -186,9 +192,11 @@ public class ProposalService {
         Path proposalDir = fitDir.resolve(String.valueOf(data.getYear()));
         Path mainDir = proposalDir.resolve("main");
         Path summaryDir = proposalDir.resolve("summary");
+        
+        
 
-        String fileMain = "Proposal_Main_Fit" + fit.getId() + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
-        String fileSummary = "Proposal_Summary_Fit" + fit.getId() + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
+        String fileMain = "Proposal_Main_" + fit.getName().replace(" ", "_") + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
+        String fileSummary = "Proposal_Summary_" + fit.getName().replace(" ", "_") + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
         Path pathMain = mainDir.resolve(fileMain);
         Path pathSummary = summaryDir.resolve(fileSummary);
         try {
@@ -229,6 +237,15 @@ public class ProposalService {
         } catch (Exception e) {
             logger.error("Some Error occured writing excel file", e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    public List<Proposal> getProposalListFromFile(Fit fit,int year, String filename, String type){
+        Path path = storageService.load(fit, year, filename, type);
+        if(path.getFileName().toString().contains(".xlsx")){
+            return CsvUtil.proposalListFromXlsx(path.toFile());
+        }else{
+            return CsvUtil.proposalListFromXls(path.toFile());
         }
     }
 

@@ -138,7 +138,7 @@ public class ProposalStorageService {
             throw new StorageFileNotFoundException("Could not read file: " + filename, e);
         }
     }
-
+  
     public void deleteAll() {
         // TODO Auto-generated method stub
 

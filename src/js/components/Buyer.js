@@ -67,7 +67,10 @@ class Buyer extends Component {
   _removeBuyer (buyer, href) {
     var value = confirm("Deleting a buyer is destructive process. It will delete all Fits, Skus and Stock Details related to this buyer. Are you sure you want to delete buyer: " + buyer);
     if (value) {
-      this.props.dispatch(removeBuyer(href));
+      var value2 = confirm("Do you really want to delete entire data related to " + buyer + "? ");
+      if (value2) {
+        this.props.dispatch(removeBuyer(href));
+      }
     }
   }
 

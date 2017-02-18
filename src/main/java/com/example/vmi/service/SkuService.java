@@ -90,4 +90,10 @@ public class SkuService {
             e.printStackTrace();
         }
     }
+    
+    @Transactional
+    public void deleteBatch(String fitName){
+        Fit fit = fitRepository.findByName(fitName);
+        skuRepository.deleteByFit(fit);
+    }
 }

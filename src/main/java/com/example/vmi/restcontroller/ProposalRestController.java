@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.example.vmi.dto.ProposalData;
 import com.example.vmi.dto.Error;
+import com.example.vmi.dto.Proposal;
 import com.example.vmi.entity.Fit;
 import com.example.vmi.service.FitService;
 import com.example.vmi.service.ProposalService;
@@ -28,6 +29,7 @@ import com.example.vmi.storage.ProposalStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -85,6 +87,17 @@ public class ProposalRestController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file);
     }
+    
+     @GetMapping("/mainData/{filename:.+}")
+    public ResponseEntity<List<Proposal>> serveMainData(@PathVariable String filename, @RequestParam("fitName") String fitName, @RequestParam("year") int year) {
+        logger.info("serveMainData(): /proposals/mainFiles/" + filename);
+        Fit fit = fitService.findOne(fitName);
+        List<Proposal> list = proposalService.getProposalListFromFile(fit, year, filename, "main");
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(list);
+    }
 
     @GetMapping("/summary/{year}")
     public ResponseEntity<?> listSummaryFiles(@RequestParam("fitName") String fitName, @PathVariable int year) throws IOException {
@@ -115,5 +128,16 @@ public class ProposalRestController {
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file);
+    }
+    
+    @GetMapping("/summaryData/{filename:.+}")
+    public ResponseEntity<List<Proposal>> serveSummaryData(@PathVariable String filename, @RequestParam("fitName") String fitName, @RequestParam("year") int year) {
+        logger.info("serveSummaryFiles(): /proposals/summaryFiles/" + filename);
+        Fit fit = fitService.findOne(fitName);
+        List<Proposal> list = proposalService.getProposalListFromFile(fit, year, filename, "main");
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(list);
     }
 }

@@ -13,7 +13,7 @@ import MenuIcon from "grommet/components/icons/base/Menu";
 import Select from 'grommet/components/Select';
 import Title from 'grommet/components/Title';
 
-import { navActivate, getBuyers, getFits, LOGOUT } from '../actions';
+import { navActivate, getBuyers, getFits, LOGOUT, FIT_CLEAR } from '../actions';
 
 class AppHeader extends Component {
 
@@ -46,6 +46,7 @@ class AppHeader extends Component {
     sessionStorage.buyerHref = undefined;
     this.props.dispatch(navActivate(false));
     this.props.dispatch({type: LOGOUT });
+    this.props.dispatch({type: FIT_CLEAR});
   }
 
   _onBuyerFilter (event) {

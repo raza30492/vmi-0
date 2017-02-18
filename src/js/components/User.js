@@ -190,6 +190,10 @@ class User extends Component {
     .then(response => {
       if (response.status == 204 || response.status == 200) {
         this._getUsers();
+      } else if (response.status == 409) {
+        response.json().then(data => {
+          alert(data.message);
+        });
       }
     })
     .catch(error => {

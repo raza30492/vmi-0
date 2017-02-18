@@ -205,6 +205,35 @@ class SKU extends Component {
     }
   }
 
+  _deleteBatch () {
+    if (sessionStorage.privilege == 'USER') {
+      alert('You do not have privilege for the operation.');
+      return;
+    }
+    if (this.state.fitName == 'Select Fit') {
+      alert('Select Fit to delete');
+      return;
+    }
+    let value = confirm('Are you sure to delete this all SKU for ' + this.state.fitName + ' ?');
+    if (value) {
+      const options = {method: 'DELETE', headers: {...headers, Authorization: 'Basic ' + sessionStorage.token}};
+      fetch(window.serviceHost + "/skus/byFit?fitName=" + this.state.fitName, options)
+      .then(handleErrors)
+      .then(response => {
+        if (response.status == 204 || response.status == 200) {
+          this._getSkus(this.state.fitName);
+        }else if (response.status == 409) {
+          response.json().then((resp)=>{
+            alert(resp.message);
+          });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    }
+  }
+
   _onFitFilter (e) {
     this.setState({fitName: e.value});
     this._getSkus(e.value);
@@ -219,6 +248,7 @@ class SKU extends Component {
   }
 
   _onAddClick (type) {
+    console.log('_onAddClick(): ' + type);
     if (sessionStorage.privilege == 'USER') {
       alert('You do not have privilege for the operation.');
       return;
@@ -419,17 +449,20 @@ class SKU extends Component {
         <Section direction="column" size="xxlarge" pad={{vertical: 'large', horizontal:'small'}}>
           <Box direction="row">
             <Box basis="1/3" align="start">
-              <Button label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  />
+              <Button primary={true} label="Add Single" onClick={this._onAddClick.bind(this, 'single')}  />
             </Box>
             <Box basis="1/3" align="center">
               <Select options={fitItems} value={fitName} onChange={this._onFitFilter.bind(this)}/>
             </Box>
             <Box basis="1/3" align="end">
-              <Button label="Add Batch" onClick={this._onAddClick.bind(this, 'bacth')}  />
+              <Button primary={true} label="Add Batch" onClick={this._onAddClick.bind(this, 'batch')}  />
             </Box>
           </Box>
 
           <Box size="xsmall" alignSelf="center" pad={{horizontal:'medium', vertical:'medium'}}>{loading}</Box>
+          <Box alignSelf="center" pad={{horizontal:'medium', vertical:'none'}}>
+            <Button primary={true} label="Delete All" onClick={this._deleteBatch.bind(this)}  />
+          </Box>
           <Box direction="column" alignSelf="center" pad={{vertical: 'large'}}>
             {skuItems}
             <ListPlaceholder unfilteredTotal={count} filteredTotal={count} emptyMessage={'No Skus found for ' + fitName} />
@@ -453,11 +486,3 @@ let select = (store) => {
 };
 
 export default connect(select)(SKU);
-
-
-// {(3*i) < skus.length ?
-//   <span className="secondary">
-//     <Button icon={<Edit />} onClick={this._onEditClick.bind(this, skus[3*i].href, skus[3*i].name)} />
-//     <Button icon={<Trash />} onClick={this._removeSku.bind(this, skus[3*i].href)} />
-//   </span> : null
-// }
