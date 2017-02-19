@@ -65,6 +65,7 @@ public class SkuService {
             } else if (input.getName().contains("xls")) {
                 output = CsvUtil.fromXls(input);
             }
+            input.delete();
             //System.out.println(output);
             //Read as Bean from csv String
             CSVReader reader = new CSVReader(new StringReader(output));
