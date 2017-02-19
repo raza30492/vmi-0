@@ -104,7 +104,7 @@ class Proposal extends Component {
     })
     .catch(error => {
       console.log(error);
-      alert('Some Error occured loading data');
+      //alert('Some Error occured loading data');
     });
   }
 
@@ -112,20 +112,47 @@ class Proposal extends Component {
     const { data, fitName } = this.state;
     let errors = [];
     let isError = false;
+    const regexYear = /^\d{4}$/;
+    const regexWeek = /^\d{1,2}$/;
+    const regexNumber = /^\d*$/;
     if (data.year == '' || data.year == undefined) {
       errors[0] = "Year cannot be blank";
+      isError = true;
+    } else if (!regexYear.test(data.year)) {
+      errors[0] = "Invalid year";
       isError = true;
     }
     if (data.week1 == '' || data.week1 == undefined) {
       errors[1] = "Week1 value cannot be blank";
       isError = true;
+    } else if (!regexWeek.test(data.week1)) {
+      errors[1] = "Invalid Week";
+      isError = true;
+    }
+    if (!(data.week2 == '' || data.week2 == undefined) && (!regexWeek.test(data.week2))) {
+      errors[2] = "Invalid week";
+      isError = true;
+    }
+    if (!(data.week3 == '' || data.week3 == undefined) && (!regexWeek.test(data.week3))) {
+      errors[3] = "Invalid week";
+      isError = true;
+    }
+    if (!(data.week4 == '' || data.week4 == undefined) && (!regexWeek.test(data.week4))) {
+      errors[4] = "Invalid week";
+      isError = true;
     }
     if (data.salesForcast == '' || data.salesForcast == undefined) {
-      errors[2] = "Sales Forcast cannot be blank";
+      errors[5] = "Sales Forcast cannot be blank";
+      isError = true;
+    } else if (!regexNumber.test(data.salesForcast)) {
+      errors[5] = "Enter number without ,";
       isError = true;
     }
     if (data.cumSalesForcast == '' || data.cumSalesForcast == undefined) {
-      errors[3] = "Cummulative Sales Forcast cannot be blank";
+      errors[6] = "Cummulative Sales Forcast cannot be blank";
+      isError = true;
+    } else if (!regexNumber.test(data.cumSalesForcast)) {
+      errors[6] = "Enter number without ,";
       isError = true;
     }
 
@@ -325,19 +352,19 @@ class Proposal extends Component {
             <FormField label="Week1*" error={errors[1]}>
               <input type="text" name="week1" value={data.week1} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week2" >
+            <FormField label="Week2" error={errors[2]} >
               <input type="text" name="week2" value={data.week2} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week3">
+            <FormField label="Week3" error={errors[3]}>
               <input type="text" name="week3" value={data.week3} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week4" >
+            <FormField label="Week4" error={errors[4]} >
               <input type="text" name="week4" value={data.week4} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Sale Forcast for proposed Week" error={errors[2]}>
+            <FormField label="Sale Forcast for proposed Week" error={errors[5]}>
               <input type="text" name="salesForcast" value={data.salesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Cummulative Forcast upto proposed Week" error={errors[3]}>
+            <FormField label="Cummulative Forcast upto proposed Week" error={errors[6]}>
               <input type="text" name="cumSalesForcast" value={data.cumSalesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
           </FormFields>

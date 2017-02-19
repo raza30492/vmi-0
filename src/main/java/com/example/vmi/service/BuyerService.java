@@ -51,19 +51,15 @@ public class BuyerService {
         }
         //Delete All Fits, SKUS and StockDetails related to this Buyer
         List<Fit> fits = fitRepository.findByBuyer(buyer);
-        System.out.println("Number of fits:" + fits);
         for(Fit fit : fits){
             List<SKU> skus = skuRepository.findByFit(fit);
-            System.out.println("Number of skus: " + skus.size());
             for(SKU sku: skus){
                 List<StockDetails> stocks = stockDetailsRepository.findBySku(sku);
-                System.out.println("Number of Stocks: " + stocks.size());
                 stockDetailsRepository.deleteInBatch(stocks);
             }
             skuRepository.deleteInBatch(skus);
         }
         fitRepository.deleteInBatch(fits);
         buyerRepository.delete(id);
-        //buyerRepository.findA
     }
 }

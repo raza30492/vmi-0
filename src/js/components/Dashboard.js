@@ -100,7 +100,7 @@ class Dashboard extends Component {
     })
     .catch(error => {
       console.log(error);
-      alert('Some Error occured loading data');
+      //alert('Some Error occured loading data');
     });
     //Fetch Summary Proposals
     url = window.serviceHost + '/proposals/summary/' + year + '?fitName=' + fitName;

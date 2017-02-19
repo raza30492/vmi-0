@@ -101,12 +101,20 @@ class SalesData extends Component {
     const { year, week, buyerName } = this.state;
     let errors = [];
     let isError = false;
+    const regexYear = /^\d{4}$/;
+    const regexWeek = /^\d{1,2}$/;
     if (year == '') {
       errors[0] = "Year cannot be blank";
+      isError = true;
+    } else if (!regexYear.test(year)) {
+      errors[0] = "Invalid Year";
       isError = true;
     }
     if (week == '') {
       errors[1] = "Week cannot be blank";
+      isError = true;
+    } else if (!regexWeek.test(week)) {
+      errors[1] = "Invalid Week";
       isError = true;
     }
     if (this.state.files.length == 0) {
