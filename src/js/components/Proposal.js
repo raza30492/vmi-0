@@ -115,44 +115,78 @@ class Proposal extends Component {
     const regexYear = /^\d{4}$/;
     const regexWeek = /^\d{1,2}$/;
     const regexNumber = /^\d*$/;
-    if (data.year == '' || data.year == undefined) {
-      errors[0] = "Year cannot be blank";
+
+    if (data.proposedWeek == '' || data.proposedWeek == undefined) {
+      errors[0] = "Proposed week value cannot be blank";
       isError = true;
-    } else if (!regexYear.test(data.year)) {
-      errors[0] = "Invalid year";
+    } else if (!regexWeek.test(data.proposedWeek)) {
+      errors[0] = "Invalid Week";
+      isError = true;
+    }
+    if (data.year0 == '' || data.year0 == undefined) {
+      errors[1] = "History data Year cannot be blank";
+      isError = true;
+    } else if (!regexYear.test(data.year0)) {
+      errors[1] = "Invalid year";
+      isError = true;
+    }
+    if (data.week0 == '' || data.week0 == undefined) {
+      errors[2] = "History data week value cannot be blank";
+      isError = true;
+    } else if (!regexWeek.test(data.week0)) {
+      errors[2] = "Invalid Week";
+      isError = true;
+    }
+    if (data.year1 == '' || data.year1 == undefined) {
+      errors[3] = "Current data Year1 cannot be blank";
+      isError = true;
+    } else if (!regexYear.test(data.year1)) {
+      errors[3] = "Invalid year";
       isError = true;
     }
     if (data.week1 == '' || data.week1 == undefined) {
-      errors[1] = "Week1 value cannot be blank";
+      errors[4] = "Current data week1 value cannot be blank";
       isError = true;
     } else if (!regexWeek.test(data.week1)) {
-      errors[1] = "Invalid Week";
+      errors[4] = "Invalid Week";
+      isError = true;
+    }
+    if (!(data.year2 == '' || data.year2 == undefined) && (!regexYear.test(data.year2))) {
+      errors[5] = "Invalid Year";
       isError = true;
     }
     if (!(data.week2 == '' || data.week2 == undefined) && (!regexWeek.test(data.week2))) {
-      errors[2] = "Invalid week";
+      errors[6] = "Invalid week";
+      isError = true;
+    }
+    if (!(data.year3 == '' || data.year3 == undefined) && (!regexYear.test(data.year3))) {
+      errors[7] = "Invalid Year";
       isError = true;
     }
     if (!(data.week3 == '' || data.week3 == undefined) && (!regexWeek.test(data.week3))) {
-      errors[3] = "Invalid week";
+      errors[8] = "Invalid week";
+      isError = true;
+    }
+    if (!(data.year4 == '' || data.year4 == undefined) && (!regexYear.test(data.year4))) {
+      errors[9] = "Invalid Year";
       isError = true;
     }
     if (!(data.week4 == '' || data.week4 == undefined) && (!regexWeek.test(data.week4))) {
-      errors[4] = "Invalid week";
+      errors[10] = "Invalid week";
       isError = true;
     }
     if (data.salesForcast == '' || data.salesForcast == undefined) {
-      errors[5] = "Sales Forcast cannot be blank";
+      errors[11] = "Sales Forcast cannot be blank";
       isError = true;
     } else if (!regexNumber.test(data.salesForcast)) {
-      errors[5] = "Enter number without ,";
+      errors[11] = "Enter number without ,";
       isError = true;
     }
     if (data.cumSalesForcast == '' || data.cumSalesForcast == undefined) {
-      errors[6] = "Cummulative Sales Forcast cannot be blank";
+      errors[12] = "Cummulative Sales Forcast cannot be blank";
       isError = true;
     } else if (!regexNumber.test(data.cumSalesForcast)) {
-      errors[6] = "Enter number without ,";
+      errors[12] = "Enter number without ,";
       isError = true;
     }
 
@@ -346,25 +380,49 @@ class Proposal extends Component {
             <FormField >
               <Select options={fitItems} name="fitName" value={data.fitName} onChange={this._onChangeInput.bind(this)}/>
             </FormField>
-            <FormField label="Year*" error={errors[0]}>
-              <input type="text" name="year" value={data.year} onChange={this._onChangeInput.bind(this)} />
+            <FormField label="Proposal for week*" error={errors[0]}>
+              <input type="text" name="proposedWeek" value={data.proposedWeek} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week1*" error={errors[1]}>
+
+            <FormField label="History data year*" error={errors[1]}>
+              <input type="text" name="year0" value={data.year0} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="History data week*" error={errors[2]}>
+              <input type="text" name="week0" value={data.week0} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+
+            <FormField label="Current data year1*" error={errors[3]}>
+              <input type="text" name="year1" value={data.year1} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Current data week1*" error={errors[4]}>
               <input type="text" name="week1" value={data.week1} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week2" error={errors[2]} >
+
+            <FormField label="Current data year2" error={errors[5]}>
+              <input type="text" name="year2" value={data.year2} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Current data week2" error={errors[6]}>
               <input type="text" name="week2" value={data.week2} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week3" error={errors[3]}>
+
+            <FormField label="Current data year3" error={errors[7]}>
+              <input type="text" name="year3" value={data.year3} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Current data week3" error={errors[8]}>
               <input type="text" name="week3" value={data.week3} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Week4" error={errors[4]} >
+
+            <FormField label="Current data year4" error={errors[9]}>
+              <input type="text" name="year4" value={data.year4} onChange={this._onChangeInput.bind(this)} />
+            </FormField>
+            <FormField label="Current data week4" error={errors[10]}>
               <input type="text" name="week4" value={data.week4} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Sale Forcast for proposed Week" error={errors[5]}>
+
+            <FormField label="Sale Forcast for proposed Week*" error={errors[11]}>
               <input type="text" name="salesForcast" value={data.salesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
-            <FormField label="Cummulative Forcast upto proposed Week" error={errors[6]}>
+            <FormField label="Cummulative Forcast upto proposed Week*" error={errors[12]}>
               <input type="text" name="cumSalesForcast" value={data.cumSalesForcast} onChange={this._onChangeInput.bind(this)} />
             </FormField>
           </FormFields>

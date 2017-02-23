@@ -51,39 +51,38 @@ public class ProposalService {
 
     public void calculateProposal(ProposalData data, Error error) {
         logger.info("calculateProposal()");
-        logger.info(data.toString());
         //Check if current year proposed week data is empty
-        if (stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek1(), data.getFitName()).isEmpty()) {
-            logger.info("year-" + data.getYear() + ", week-" + data.getWeek1() + " Sales data not found");
+        if (stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear1(), data.getWeek1(), data.getFitName()).isEmpty()) {
+            logger.info("year-" + data.getYear1() + ", week-" + data.getWeek1() + " Sales data not found");
             error.setCode("CURRENT_YEAR_WEEK1_DATA_NOT_FOUND");
             return;
         }
-        if (data.getWeek2() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek2(), data.getFitName()).isEmpty()) {
-            logger.info("year-" + data.getYear() + ", week-" + data.getWeek2() + " Sales data not found");
+        if (data.getWeek2() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear2(), data.getWeek2(), data.getFitName()).isEmpty()) {
+            logger.info("year-" + data.getYear2() + ", week-" + data.getWeek2() + " Sales data not found");
             error.setCode("CURRENT_YEAR_WEEK2_DATA_NOT_FOUND");
             return;
         }
-        if (data.getWeek3() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek3(), data.getFitName()).isEmpty()) {
-            logger.info("year-" + data.getYear() + ", week-" + data.getWeek3() + " Sales data not found");
+        if (data.getWeek3() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear3(), data.getWeek3(), data.getFitName()).isEmpty()) {
+            logger.info("year-" + data.getYear3() + ", week-" + data.getWeek3() + " Sales data not found");
             error.setCode("CURRENT_YEAR_WEEK3_DATA_NOT_FOUND");
             return;
         }
-        if (data.getWeek4() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek4(), data.getFitName()).isEmpty()) {
-            logger.info("year-" + data.getYear() + ", week-" + data.getWeek4() + " Sales data not found");
+        if (data.getWeek4() != 0 && stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear4(), data.getWeek4(), data.getFitName()).isEmpty()) {
+            logger.info("year-" + data.getYear4() + ", week-" + data.getWeek4() + " Sales data not found");
             error.setCode("CURRENT_YEAR_WEEK4_DATA_NOT_FOUND");
             return;
         }
         //Check if previous year week 51 data is empty
-        if (stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear() - 1, 51, data.getFitName()).isEmpty()) {
-            logger.info("year-" + (data.getYear() - 1) + ", week-51 Sales data not found");
+        if (stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear0(), data.getWeek0(), data.getFitName()).isEmpty()) {
+            logger.info("year-" + data.getYear0() + ", week-" + data.getWeek0() + " Sales data not found");
             error.setCode("PREVIOUS_YEAR_DATA_NOT_FOUND");
             return;
         }
 
-        List<StockDetails> week1 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek1(), data.getFitName());
-        List<StockDetails> week2 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek2(), data.getFitName());
-        List<StockDetails> week3 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek3(), data.getFitName());
-        List<StockDetails> week4 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear(), data.getWeek4(), data.getFitName());
+        List<StockDetails> week1 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear1(), data.getWeek1(), data.getFitName());
+        List<StockDetails> week2 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear2(), data.getWeek2(), data.getFitName());
+        List<StockDetails> week3 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear3(), data.getWeek3(), data.getFitName());
+        List<StockDetails> week4 = stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear4(), data.getWeek4(), data.getFitName());
         List<SKUMissing> skusMissing = new ArrayList<>();
         List<Proposal> proposalList = new ArrayList<>();
 
@@ -101,7 +100,7 @@ public class ProposalService {
             bkOrder2 = 0;
             bkOrder3 = 0;
             bkOrder4 = 0;
-            tmpStockDetails = stockDetailsRepository.findByYearAndWeekAndSku((data.getYear() - 1), 51, stk.getSku());
+            tmpStockDetails = stockDetailsRepository.findByYearAndWeekAndSku(data.getYear0(), data.getWeek0(), stk.getSku());
             if (tmpStockDetails == null) {
                 skusMissing.add(new SKUMissing(stk.getSku().getFit().getName(), stk.getSku().getName()));
                 continue;
@@ -111,22 +110,38 @@ public class ProposalService {
             cumWk1 = stk.getCumUkSales();
             bkOrder2 = stk.getTwBackOrder();
             if (!week2.isEmpty()) {
-                tmp = week2.get(j);
-                cumWk2 = tmp.getCumUkSales();
-                bkOrder2 = tmp.getTwBackOrder();
-                numOfWeeks++;
+                j = week2.indexOf(stk);
+                if(j != -1){
+                    tmp = week2.get(j);
+                    cumWk2 = tmp.getCumUkSales();
+                    bkOrder2 = tmp.getTwBackOrder();
+                    numOfWeeks++; 
+                }else{
+                    cumWk2 = bkOrder2 = 0;
+                }              
             }
             if (!week3.isEmpty()) {
-                tmp = week3.get(j);
-                cumWk3 = tmp.getCumUkSales();
-                bkOrder3 = tmp.getTwBackOrder();
-                numOfWeeks++;
+                j = week3.indexOf(stk);
+                if(j != -1){
+                   tmp = week3.get(j);
+                    cumWk3 = tmp.getCumUkSales();
+                    bkOrder3 = tmp.getTwBackOrder();
+                    numOfWeeks++; 
+                }else{
+                    cumWk3 = bkOrder3 = 0;
+                }
             }
             if (!week4.isEmpty()) {
-                tmp = week4.get(j);
-                cumWk4 = tmp.getCumUkSales();
-                bkOrder4 = tmp.getTwBackOrder();
-                numOfWeeks++;
+                j = week4.indexOf(stk);
+                if(j != -1){
+                    tmp = week4.get(j);
+                    cumWk4 = tmp.getCumUkSales();
+                    bkOrder4 = tmp.getTwBackOrder();
+                    numOfWeeks++;
+                }else{
+                    cumWk4 = bkOrder4 = 0;
+                }
+                
             }
 
             tmpProposal = new Proposal();
@@ -146,7 +161,7 @@ public class ProposalService {
             tmpProposal.setOnOrder(stk.getUkOnOrder());
 
             proposalList.add(tmpProposal);
-            j++;
+            //j++;
         }
 
         if (skusMissing.size() > 0) {
@@ -173,11 +188,11 @@ public class ProposalService {
         XSSFWorkbook workbookMain = new XSSFWorkbook();
         XSSFSheet sheetMain = workbookMain.createSheet(data.getFitName());
         style = workbookMain.createCellStyle();
-        writeToSheetMain(proposalList, sheetMain, data.getYear(), data.getWeek1(), data.getWeek2(), data.getWeek3(), data.getWeek4());
+        writeToSheetMain(proposalList, sheetMain, data.getYear1(), data.getWeek1(), data.getWeek2(), data.getWeek3(), data.getWeek4());
 
         XSSFWorkbook workbookSummary = new XSSFWorkbook();
         XSSFSheet sheetSummary = workbookSummary.createSheet(data.getFitName());
-        writeToSheetSummary(proposalList, sheetSummary, data.getYear(), data.getWeek1());
+        writeToSheetSummary(proposalList, sheetSummary, data.getYear1(), data.getWeek1());
 
         for (int i = 0; i < 18; i++) {
             sheetMain.autoSizeColumn(i);
@@ -189,14 +204,14 @@ public class ProposalService {
         Fit fit = fitRepository.findByName(data.getFitName());
         Path buyerDir = Paths.get("data", "proposals", String.valueOf("buyer" + fit.getBuyer().getId()));
         Path fitDir = buyerDir.resolve("fit" + fit.getId());
-        Path proposalDir = fitDir.resolve(String.valueOf(data.getYear()));
+        Path proposalDir = fitDir.resolve(String.valueOf(data.getYear1()));
         Path mainDir = proposalDir.resolve("main");
         Path summaryDir = proposalDir.resolve("summary");
         
         
 
-        String fileMain = "Proposal_Main_" + fit.getName().replace(" ", "_") + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
-        String fileSummary = "Proposal_Summary_" + fit.getName().replace(" ", "_") + "_Week" + data.getWeek1() + "_Year" + data.getYear() + ".xlsx";
+        String fileMain = "Proposal_Main_" + fit.getName().replace(" ", "_") + "_Week" + data.getProposedWeek() + "_Year" + data.getYear1() + ".xlsx";
+        String fileSummary = "Proposal_Summary_" + fit.getName().replace(" ", "_") + "_Week" + data.getProposedWeek() + "_Year" + data.getYear1() + ".xlsx";
         Path pathMain = mainDir.resolve(fileMain);
         Path pathSummary = summaryDir.resolve(fileSummary);
         try {
