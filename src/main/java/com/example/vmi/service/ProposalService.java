@@ -51,6 +51,11 @@ public class ProposalService {
 
     public void calculateProposal(ProposalData data, Error error) {
         logger.info("calculateProposal()");
+        if(data.getProposedWeek() == 0){
+            logger.info("Proposed week not provided");
+            error.setCode("PROPOSED_WEEK_NOT_PRESENT");
+            return;
+        }
         //Check if current year proposed week data is empty
         if (stockDetailsRepository.findByYearAndWeekAndSkuFitName(data.getYear1(), data.getWeek1(), data.getFitName()).isEmpty()) {
             logger.info("year-" + data.getYear1() + ", week-" + data.getWeek1() + " Sales data not found");
@@ -399,7 +404,7 @@ public class ProposalService {
 
         if (week4 != 0 || week3 != 0 || week2 != 0) {
             cell = row.createCell(i++);
-            cell.setCellValue("CUM SALE(" + year + ") WK" + week1);
+            cell.setCellValue("CUM SALE\n(" + year + ") WK" + week1);
             cell.setCellStyle(style);
         }
 
@@ -426,6 +431,7 @@ public class ProposalService {
 
         cell = row.createCell(i++);
         cell.setCellValue("SEASON'S INTAKE PROPOSAL\n(MULTIPLE OF 6)");
+        cell.setCellStyle(style);
 
         cell = row.createCell(i++);
         cell.setCellValue("ON STOCK WK" + week1);
