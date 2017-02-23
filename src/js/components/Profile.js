@@ -141,7 +141,7 @@ class Profile extends Component {
       </Layer>
     );
 
-    const content = (user == null ? null :
+    const content = (user == null ? null :(
       <List>
         <ListItem justify="between" pad={{vertical:'small',horizontal:'small'}} >
           <span> Employee Name </span>
@@ -169,6 +169,7 @@ class Profile extends Component {
           <span className="secondary">{(user.buyer != null ) ? user.buyer.name : 'No Buyer Access'}</span>
         </ListItem>}
       </List>
+      )
     );
 
     return (
