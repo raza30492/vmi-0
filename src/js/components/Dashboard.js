@@ -4,7 +4,6 @@ import { ROLE_MERCHANT, ROLE_USER } from '../utils/util';
 import { getFits } from '../actions';
 import { localeData } from '../reducers/localization';
 import { handleErrors, headers } from '../utils/restUtil';
-//import history from '../history';
 
 import AppHeader from './AppHeader';
 import Box from 'grommet/components/Box';

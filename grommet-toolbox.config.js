@@ -12,5 +12,11 @@ export default {
   mainJs: 'src/js/index.js',
   mainScss: 'src/scss/index.scss',
   devServerPort: 9000,
-  eslintOverride: path.resolve(__dirname, 'customEslintrc')
+  eslintOverride: path.resolve(__dirname, 'customEslintrc'),
+  webpack:{
+    devServer:{
+      historyApiFallback: true,
+      contentBase: './'
+    }
+  }
 };

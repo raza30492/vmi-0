@@ -14,12 +14,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            .requestMatchers().antMatchers("/**","/api/**")
+        .and()
             .authorizeRequests()
-                .antMatchers("/").permitAll()
-                .antMatchers("/static/**").permitAll()
                 .antMatchers("/api/employees/logon").permitAll()
                 .antMatchers("/api/employees/forgotPassword").permitAll()
-                .anyRequest().fullyAuthenticated()
+                .antMatchers("/api/**").authenticated()
+                .antMatchers("/**").permitAll()
         .and()
             .httpBasic()
         .and()

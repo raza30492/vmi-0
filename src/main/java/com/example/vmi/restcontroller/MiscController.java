@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.vmi.service.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class MiscController {
@@ -16,7 +17,7 @@ public class MiscController {
     @Autowired
     EmployeeService employeeService;
 
-    @RequestMapping(value = {"/"})
+    @GetMapping(value = {"/logon","/"})
     public String index() {
         logger.info("Home Page");
         return "index";

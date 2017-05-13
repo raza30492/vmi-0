@@ -23,6 +23,11 @@ import com.example.vmi.storage.TemplateStorageService;
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
 public class VmiApplication extends SpringBootServletInitializer {
+    
+    public VmiApplication(){
+        super();
+        setRegisterErrorPageFilter(false);
+    }
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
